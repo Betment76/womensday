@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RuStore Pay SDK: Console Application ID из RuStore Консоли. -->
+    <string name="CONSOLE_APPLICATION_ID">2063757475</string>
+</resources>
