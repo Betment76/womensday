@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:womensday/core/constants/legal_documents.dart';
+import 'package:womensday/core/extensions/legal_document_l10n.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/presentation/widgets/clickable_logo_widget.dart';
 import 'package:womensday/presentation/widgets/developer_contact_card.dart';
@@ -38,10 +40,11 @@ class _AboutPageState extends State<AboutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SakuraBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(title: const Text('О приложении')),
+        appBar: AppBar(title: Text(l10n.aboutTitle)),
         body: Column(
           children: [
             Expanded(
@@ -69,7 +72,7 @@ class _AboutPageState extends State<AboutPage> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    'Как считаются фазы',
+                                    l10n.aboutPhasesTitle,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium
@@ -87,22 +90,16 @@ class _AboutPageState extends State<AboutPage> {
                           ),
                         ),
                         if (_isPhasesExpanded)
-                          const Padding(
-                            padding: EdgeInsets.fromLTRB(18, 0, 18, 20),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(18, 0, 18, 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Цикл строится по вашим отметкам: подряд идущие дни месячных — один цикл. Средняя длина цикла и длительность месячных считаются по последним 6 циклам. Если истории ещё мало, берутся значения из настроек.',
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  'Овуляция: длина цикла минус 14 дней от начала текущего цикла. Фертильное окно: 5 дней до овуляции и 1 день после. Прогноз следующих месячных: начало последнего цикла плюс средняя длина.',
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  'Месячные, фолликулярная фаза, фертильное окно, овуляция, лютеиновая фаза и задержка — ориентир, а не медицинский диагноз. Приложение не заменяет консультацию врача и не является средством контрацепции. Данные остаются только на этом устройстве.',
-                                ),
+                                Text(l10n.aboutPhasesBody1),
+                                const SizedBox(height: 10),
+                                Text(l10n.aboutPhasesBody2),
+                                const SizedBox(height: 10),
+                                Text(l10n.aboutPhasesBody3),
                               ],
                             ),
                           ),
@@ -111,14 +108,14 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Юридические документы',
+                    l10n.legalSectionTitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'ФЗ-152, политика, соглашение и оферта',
+                    l10n.legalSectionSubtitle,
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: SakuraColors.wood),
@@ -146,7 +143,7 @@ class _AboutPageState extends State<AboutPage> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    document.title,
+                                    document.localizedTitle(l10n),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -169,7 +166,7 @@ class _AboutPageState extends State<AboutPage> {
                     const SizedBox(height: 12),
                     Center(
                       child: Text(
-                        'Версия $_appVersion',
+                        '${l10n.versionLabel} $_appVersion',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: SakuraColors.wood,
                         ),

@@ -32,6 +32,16 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("rustore") {
+            dimension = "distribution"
+        }
+        create("googleplay") {
+            dimension = "distribution"
+        }
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {

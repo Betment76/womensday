@@ -1,0 +1,55 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="womensday" android:host="payment"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="womensdaypay" />
+            </intent-filter>
+        </activity>
+        <meta-data
+            android:name="console_app_id_value"
+            android:value="@string/CONSOLE_APPLICATION_ID" />
+        <meta-data
+            android:name="sdk_pay_scheme_value"
+            android:value="womensdaypay" />
+        <meta-data
+            android:name="app_scheme_value"
+            android:value="womensdaypay" />
+    </application>
+    <queries>
+        <package android:name="ru.vk.store"/>
+        <package android:name="ru.rustore.app" />
+        <package android:name="ru.sberbankmobile" />
+        <package android:name="com.sberbank.spasibo" />
+        <package android:name="ru.vtb24.mobilebanking.android" />
+        <package android:name="ru.alfabank.mobile.android" />
+        <package android:name="com.rocketbank.r2d2" />
+        <package android:name="ru.tinkoff.investing" />
+        <package android:name="ru.raiffeisen.r_online_new" />
+        <package android:name="com.idamob.tinkoff.android" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="bank100000000004" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="bank100000000111" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sberpay" />
+        </intent>
+    </queries>
+</manifest>

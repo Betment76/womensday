@@ -2,12 +2,18 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:womensday/core/constants/app_constants.dart';
+import 'package:womensday/l10n/app_localizations.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
 import 'package:womensday/domain/services/reminder_scheduler.dart';
 
 /// Напоминание за день до прогнозируемых месячных.
 class NotificationService implements ReminderScheduler {
+  NotificationService({this._preferences});
+
+  final SharedPreferences? _preferences;
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _isReady = false;
@@ -58,22 +64,32 @@ class NotificationService implements ReminderScheduler {
     if (!scheduled.isAfter(tz.TZDateTime.now(tz.local))) {
       return;
     }
+    final AppLocalizations strings = _executeResolveStrings();
     await _plugin.zonedSchedule(
       1,
-      AppConstants.appName,
-      'Завтра по прогнозу могут начаться месячные.',
+      strings.appName,
+      strings.reminderNotificationBody,
       scheduled,
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           'sakura_cycle',
-          'Цикл',
-          channelDescription: 'Напоминание о ближайших месячных',
+          strings.reminderTitle,
+          channelDescription: strings.reminderSubtitle,
           icon: 'ic_stat_reminder',
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
+  }
+
+  AppLocalizations _executeResolveStrings() {
+    final String code =
+        _preferences?.getString(kAppLocaleKey) ?? 'ru';
+    if (code == 'en') {
+      return AppLocalizationsEn();
+    }
+    return AppLocalizationsRu();
   }
 
   Future<void> executeRequestPermission() async {

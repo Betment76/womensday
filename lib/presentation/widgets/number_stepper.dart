@@ -11,6 +11,7 @@ class NumberStepper extends StatelessWidget {
     required this.max,
     required this.onChanged,
     this.unit = 'дней',
+    this.compact = false,
   });
   final String label;
   final int value;
@@ -18,8 +19,44 @@ class NumberStepper extends StatelessWidget {
   final int max;
   final String unit;
   final ValueChanged<int> onChanged;
+  final bool compact;
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          _RoundButton(
+            icon: Icons.remove,
+            dense: true,
+            onPressed: value > min ? () => onChanged(value - 1) : null,
+          ),
+          SizedBox(
+            width: 56,
+            child: Text(
+              '$value',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: SakuraColors.deepBlossom,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          _RoundButton(
+            icon: Icons.add,
+            dense: true,
+            onPressed: value < max ? () => onChanged(value + 1) : null,
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -53,13 +90,24 @@ class NumberStepper extends StatelessWidget {
 }
 
 class _RoundButton extends StatelessWidget {
-  const _RoundButton({required this.icon, required this.onPressed});
+  const _RoundButton({
+    required this.icon,
+    required this.onPressed,
+    this.dense = false,
+  });
   final IconData icon;
   final VoidCallback? onPressed;
+  final bool dense;
   @override
   Widget build(BuildContext context) {
     return IconButton.filledTonal(
       onPressed: onPressed,
+      iconSize: dense ? 20 : 24,
+      visualDensity: dense ? VisualDensity.compact : VisualDensity.standard,
+      constraints: dense
+          ? const BoxConstraints(minWidth: 36, minHeight: 36)
+          : null,
+      padding: dense ? const EdgeInsets.all(6) : null,
       style: IconButton.styleFrom(
         backgroundColor: SakuraColors.petal,
         foregroundColor: SakuraColors.deepBlossom,

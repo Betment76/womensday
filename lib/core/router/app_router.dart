@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/constants/legal_documents.dart';
+import 'package:womensday/core/extensions/legal_document_l10n.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/data/services/appmetrica_route_observer.dart';
 import 'package:womensday/domain/entities/payment_session.dart';
@@ -15,6 +17,8 @@ import 'package:womensday/presentation/pages/settings/settings_page.dart';
 import 'package:womensday/presentation/pages/shell/app_shell_page.dart';
 import 'package:womensday/presentation/pages/splash/splash_page.dart';
 import 'package:womensday/presentation/pages/stats/stats_page.dart';
+import 'package:womensday/l10n/app_localizations.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/pages/today/today_page.dart';
 
 /// Маршрутизатор приложения.
@@ -50,6 +54,9 @@ final Provider<GoRouter> goRouterProvider = Provider<GoRouter>((Ref ref) {
       if (location == '/splash' || location == '/onboarding') {
         return '/today';
       }
+      if (!DistributionConfig.paymentsEnabled && location == '/payment') {
+        return '/settings';
+      }
       return null;
     },
     routes: <RouteBase>[
@@ -58,8 +65,13 @@ final Provider<GoRouter> goRouterProvider = Provider<GoRouter>((Ref ref) {
         name: 'splash',
         builder: (BuildContext context, GoRouterState state) {
           final CalendarState calendar = ref.read(calendarControllerProvider);
+          final Locale locale = ref.read(localeControllerProvider);
+          final AppLocalizations l10n = AppLocalizations.lookup(locale);
+          final String? errorText = calendar.errorMessage == null
+              ? null
+              : l10n.messageForCode(calendar.errorMessage!);
           return SplashPage(
-            errorMessage: calendar.errorMessage,
+            errorMessage: errorText,
             onRetry: () {
               ref.read(calendarControllerProvider.notifier).executeLoad();
             },
@@ -136,25 +148,28 @@ final Provider<GoRouter> goRouterProvider = Provider<GoRouter>((Ref ref) {
           return const AboutPage();
         },
       ),
-      GoRoute(
-        path: '/payment',
-        name: 'payment',
-        builder: (BuildContext context, GoRouterState state) {
-          final Object? extra = state.extra;
-          if (extra is! PaymentSession) {
-            return const Scaffold(
-              body: Center(child: Text('Сессия оплаты не найдена')),
+      if (DistributionConfig.paymentsEnabled)
+        GoRoute(
+          path: '/payment',
+          name: 'payment',
+          builder: (BuildContext context, GoRouterState state) {
+            final Object? extra = state.extra;
+            if (extra is! PaymentSession) {
+              return Scaffold(
+                body: Center(
+                  child: Text(AppLocalizations.of(context).paymentSessionNotFound),
+                ),
+              );
+            }
+            return Scaffold(
+              backgroundColor: SakuraColors.mist,
+              body: Align(
+                alignment: Alignment.bottomCenter,
+                child: PaymentPage(session: extra),
+              ),
             );
-          }
-          return Scaffold(
-            backgroundColor: SakuraColors.mist,
-            body: Align(
-              alignment: Alignment.bottomCenter,
-              child: PaymentPage(session: extra),
-            ),
-          );
-        },
-      ),
+          },
+        ),
       GoRoute(
         path: '/legal',
         name: 'legal',
@@ -163,8 +178,9 @@ final Provider<GoRouter> goRouterProvider = Provider<GoRouter>((Ref ref) {
           final LegalDocument document = extra is LegalDocument
               ? extra
               : LegalDocuments.all.first;
+          final AppLocalizations l10n = AppLocalizations.of(context);
           return LegalDocumentPage(
-            title: document.title,
+            title: document.localizedTitle(l10n),
             assetPath: document.assetPath,
           );
         },

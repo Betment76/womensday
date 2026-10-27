@@ -10,6 +10,7 @@ import 'package:womensday/data/services/premium_entitlement_service.dart';
 import 'package:womensday/data/services/rustore_pay_service.dart';
 import 'package:womensday/data/services/tbank_payment_service.dart';
 import 'package:womensday/domain/entities/payment_session.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/premium_controller.dart';
 import 'package:womensday/presentation/pages/payment/payment_page.dart';
 import 'package:womensday/presentation/widgets/premium_consent_dialog.dart';
@@ -45,6 +46,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
   }
 
   Future<void> _executeOpenSbp({required String email}) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     setState(() => _isOpening = true);
     unawaited(
       getIt<AppMetricaService>().executeReportEvent(
@@ -60,7 +62,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
       final PaymentSession session = await payments.executeInitPayment(
         orderId: payments.generateOrderId(),
         amountRubles: TBankConfig.premiumAmountRubles,
-        description: TBankConfig.premiumDescription,
+        description: l10n.premiumPaymentDescription,
         email: email.isEmpty ? null : email,
       );
       if (!mounted) {
@@ -89,7 +91,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось открыть оплату')),
+        SnackBar(content: Text(l10n.premiumOpenPaymentFailed)),
       );
     } finally {
       if (mounted) {
@@ -99,6 +101,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
   }
 
   Future<void> _executeOpenRustore() async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     setState(() => _isOpening = true);
     unawaited(
       getIt<AppMetricaService>().executeReportEvent(
@@ -117,9 +120,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Платежи RuStore недоступны. Установите RuStore.'),
-          ),
+          SnackBar(content: Text(l10n.premiumRustoreUnavailable)),
         );
         return;
       }
@@ -139,7 +140,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
           ),
         );
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Премиум активирован. Реклама отключена.')),
+          SnackBar(content: Text(l10n.premiumActivatedAdsOff)),
         );
       } else {
         unawaited(
@@ -153,7 +154,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
           ),
         );
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Покупка не удалась. Попробуйте позже.')),
+          SnackBar(content: Text(l10n.premiumPurchaseFailed)),
         );
       }
     } finally {
@@ -165,12 +166,13 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool isPremium = ref.watch(premiumControllerProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isPremium)
-          const SectionPremiumActive()
+          SectionPremiumActive(label: l10n.premiumActiveLabel)
         else
           FilledButton.icon(
             onPressed: _isOpening
@@ -183,7 +185,7 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.workspace_premium_outlined),
-            label: const Text('Купить премиум'),
+            label: Text(l10n.premiumBuyTitle),
           ),
         const SizedBox(height: 8),
         const RestorePurchaseButton(),
@@ -194,14 +196,16 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
 
 /// Плашка, если премиум уже куплен.
 class SectionPremiumActive extends StatelessWidget {
-  const SectionPremiumActive({super.key});
+  const SectionPremiumActive({super.key, required this.label});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      'Премиум активен. Реклама отключена.',
+    return Text(
+      label,
       textAlign: TextAlign.center,
-      style: TextStyle(
+      style: const TextStyle(
         fontWeight: FontWeight.w700,
         color: SakuraColors.deepBlossom,
       ),

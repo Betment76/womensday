@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:womensday/core/constants/app_constants.dart';
-import 'package:womensday/core/extensions/plural_extension.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/cycle_forecast.dart';
 import 'package:womensday/domain/entities/period_cycle.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/widgets/export_doctor_report_button.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
 
@@ -16,6 +17,8 @@ class StatsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final String localeTag = ref.watch(localeControllerProvider).languageCode;
     final CycleForecast forecast = ref
         .watch(calendarControllerProvider)
         .forecast;
@@ -27,7 +30,7 @@ class StatsPage extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
           Text(
-            'Циклы',
+            l10n.statsTitle,
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
@@ -39,18 +42,18 @@ class StatsPage extends ConsumerWidget {
               Expanded(
                 child: executeStatTile(
                   context,
-                  title: 'Длина цикла',
+                  title: l10n.statsCycleLength,
                   value: '${forecast.averageCycleLength}',
-                  unit: executePluralDays(forecast.averageCycleLength),
+                  unit: l10n.pluralDays(forecast.averageCycleLength),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: executeStatTile(
                   context,
-                  title: 'Месячные',
+                  title: l10n.statsPeriodDuration,
                   value: '${forecast.averagePeriodDuration}',
-                  unit: executePluralDays(forecast.averagePeriodDuration),
+                  unit: l10n.pluralDays(forecast.averagePeriodDuration),
                 ),
               ),
             ],
@@ -63,7 +66,7 @@ class StatsPage extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    forecast.regularity.title,
+                    l10n.regularityTitle(forecast.regularity),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -76,21 +79,19 @@ class StatsPage extends ConsumerWidget {
           const ExportDoctorReportButton(),
           const SizedBox(height: 16),
           Text(
-            'Последние циклы',
+            l10n.statsRecentCycles,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           if (displayedCycles.isEmpty)
-            const SectionCard(
-              child: Text('Отметьте месячные — здесь появится история.'),
-            )
+            SectionCard(child: Text(l10n.statsEmptyHistory))
           else
             ...displayedCycles.reversed.map(
               (PeriodCycle cycle) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: executeCycleTile(context, cycle),
+                child: executeCycleTile(context, l10n, localeTag, cycle),
               ),
             ),
         ],
@@ -129,13 +130,18 @@ class StatsPage extends ConsumerWidget {
     );
   }
 
-  Widget executeCycleTile(BuildContext context, PeriodCycle cycle) {
-    final DateFormat formatter = DateFormat('d MMM', 'ru');
+  Widget executeCycleTile(
+    BuildContext context,
+    AppLocalizations l10n,
+    String localeTag,
+    PeriodCycle cycle,
+  ) {
+    final DateFormat formatter = DateFormat('d MMM', localeTag);
     final String range =
         '${formatter.format(cycle.start)} — ${formatter.format(cycle.end)}';
     final String lengthLabel = cycle.lengthToNext == null
-        ? 'текущий цикл'
-        : '${cycle.lengthToNext} ${executePluralDays(cycle.lengthToNext!)}';
+        ? l10n.statsCurrentCycle
+        : '${cycle.lengthToNext} ${l10n.pluralDays(cycle.lengthToNext!)}';
     return SectionCard(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Row(
@@ -149,7 +155,7 @@ class StatsPage extends ConsumerWidget {
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 Text(
-                  'Месячные ${cycle.duration} ${executePluralDays(cycle.duration)}',
+                  '${l10n.period} ${cycle.duration} ${l10n.pluralDays(cycle.duration)}',
                 ),
               ],
             ),

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
-import 'package:womensday/core/extensions/plural_extension.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/cycle_phase.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
-import 'package:womensday/presentation/extensions/cycle_phase_ui.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/widgets/day_details_card.dart';
 import 'package:womensday/presentation/widgets/sakura_background.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
@@ -20,7 +19,7 @@ class TodayPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final CalendarState state = ref.watch(calendarControllerProvider);
     final DateTime today = DateTime.now().dateOnly;
-    final Widget header = executeHeader(context, today);
+    final Widget header = executeHeader(context, ref, today);
     final Widget phase = executePhaseCard(context, state);
     return SafeArea(
       bottom: false,
@@ -48,7 +47,9 @@ class TodayPage extends ConsumerWidget {
     );
   }
 
-  Widget executeHeader(BuildContext context, DateTime today) {
+  Widget executeHeader(BuildContext context, WidgetRef ref, DateTime today) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final String localeTag = ref.watch(localeControllerProvider).languageCode;
     return Row(
       children: [
         const SakuraMark(),
@@ -57,13 +58,13 @@ class TodayPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppConstants.appName,
+              l10n.appName,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             Text(
-              DateFormat('EEEE, d MMMM', 'ru').format(today),
+              DateFormat('EEEE, d MMMM', localeTag).format(today),
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: SakuraColors.wood),
@@ -75,12 +76,13 @@ class TodayPage extends ConsumerWidget {
   }
 
   Widget executePhaseCard(BuildContext context, CalendarState state) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SectionCard(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       child: Column(
         children: [
           Text(
-            'День ${state.forecast.cycleDay}',
+            l10n.dayNumber(state.forecast.cycleDay),
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w800,
               color: SakuraColors.deepBlossom,
@@ -88,14 +90,14 @@ class TodayPage extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            state.forecast.currentPhase.title,
+            l10n.phaseTitle(state.forecast.currentPhase),
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            executeStatusText(state),
+            executeStatusText(l10n, state),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: SakuraColors.sakura,
@@ -104,7 +106,7 @@ class TodayPage extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            state.forecast.currentPhase.hint,
+            l10n.phaseHint(state.forecast.currentPhase),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -113,15 +115,15 @@ class TodayPage extends ConsumerWidget {
     );
   }
 
-  String executeStatusText(CalendarState state) {
+  String executeStatusText(AppLocalizations l10n, CalendarState state) {
     if (state.forecast.currentPhase == CyclePhase.menstruation) {
-      return 'Идут месячные';
+      return l10n.periodActive;
     }
     if (state.forecast.isLate) {
       final int delay =
           state.forecast.cycleDay - state.forecast.averageCycleLength;
-      return 'Задержка $delay ${executePluralDays(delay)}';
+      return l10n.delayDays(delay);
     }
-    return 'До месячных ${state.forecast.daysUntilPeriod} ${executePluralDays(state.forecast.daysUntilPeriod)}';
+    return l10n.daysUntilPeriod(state.forecast.daysUntilPeriod);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
 import 'package:womensday/presentation/widgets/sakura_background.dart';
 
@@ -16,6 +17,7 @@ class AppShellPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SakuraBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -34,26 +36,26 @@ class AppShellPage extends ConsumerWidget {
               initialLocation: index == navigationShell.currentIndex,
             );
           },
-          destinations: const <NavigationDestination>[
+          destinations: <NavigationDestination>[
             NavigationDestination(
-              icon: Icon(Icons.spa_outlined),
-              selectedIcon: Icon(Icons.spa),
-              label: 'Сегодня',
+              icon: const Icon(Icons.spa_outlined),
+              selectedIcon: const Icon(Icons.spa),
+              label: l10n.navToday,
             ),
             NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month),
-              label: 'Календарь',
+              icon: const Icon(Icons.calendar_month_outlined),
+              selectedIcon: const Icon(Icons.calendar_month),
+              label: l10n.navCalendar,
             ),
             NavigationDestination(
-              icon: Icon(Icons.insights_outlined),
-              selectedIcon: Icon(Icons.insights),
-              label: 'Циклы',
+              icon: const Icon(Icons.insights_outlined),
+              selectedIcon: const Icon(Icons.insights),
+              label: l10n.navStats,
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: 'Ещё',
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: l10n.navSettings,
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:womensday/core/constants/calendar_message_codes.dart';
 import 'package:womensday/core/di/calendar_bootstrap.dart';
 import 'package:womensday/core/di/injection.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
@@ -88,7 +89,7 @@ class CalendarController extends Notifier<CalendarState> {
       state = CalendarState(
         isLoading: false,
         hasLoadError: true,
-        errorMessage: 'Не удалось загрузить календарь',
+        errorMessage: CalendarMessageCode.loadFailed,
         data: CalendarData.createEmpty(),
         forecast: CycleForecast.createEmpty(
           cycleLength: CycleSettings.createDefault().cycleLength,
@@ -200,7 +201,7 @@ class CalendarController extends Notifier<CalendarState> {
         isLoading: false,
         hasLoadError: false,
         errorMessage: state.errorMessage,
-        persistErrorMessage: 'Не удалось сохранить данные',
+        persistErrorMessage: CalendarMessageCode.persistFailed,
         data: state.data,
         forecast: state.forecast,
       );
@@ -245,7 +246,7 @@ class CalendarController extends Notifier<CalendarState> {
       );
       await _reportExporter.executeShare(report);
     } catch (_) {
-      executeSetPersistError('Не удалось подготовить PDF');
+      executeSetPersistError(CalendarMessageCode.pdfFailed);
     }
   }
 

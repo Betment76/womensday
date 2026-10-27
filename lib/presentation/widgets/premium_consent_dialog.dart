@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:womensday/core/constants/legal_documents.dart';
 import 'package:womensday/core/constants/tbank_config.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 
 /// Способ оплаты премиума.
 enum PremiumPaymentMethod { sbp, rustore }
@@ -75,6 +76,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Material(
       color: SakuraColors.card,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -97,7 +99,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               ),
             ),
             Text(
-              'Купить премиум',
+              l10n.premiumBuyTitle,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -114,8 +116,8 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'После оплаты отключается вся реклама. Сохраните номер заказа.',
+            Text(
+              l10n.premiumAfterPaymentHint,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -147,7 +149,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildConsentText(context)),
+                Expanded(child: _buildConsentText(context, l10n)),
               ],
             ),
             const SizedBox(height: 20),
@@ -156,7 +158,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
                   ? () => _executeReturn(PremiumPaymentMethod.sbp)
                   : null,
               icon: const Icon(Icons.account_balance_wallet_outlined),
-              label: const Text('Оплатить СБП'),
+              label: Text(l10n.premiumPaySbp),
             ),
             const SizedBox(height: 8),
             FilledButton.icon(
@@ -172,12 +174,12 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
                 disabledForegroundColor: Colors.white.withValues(alpha: 0.38),
               ),
               icon: const Icon(Icons.store_outlined),
-              label: const Text('Оплатить в RuStore'),
+              label: Text(l10n.premiumPayRustore),
             ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Отмена'),
+              child: Text(l10n.cancel),
             ),
           ],
         ),
@@ -185,7 +187,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
     );
   }
 
-  Widget _buildConsentText(BuildContext context) {
+  Widget _buildConsentText(BuildContext context, AppLocalizations l10n) {
     final TextStyle? base = Theme.of(context).textTheme.bodySmall;
     final TextStyle link = (base ?? const TextStyle()).copyWith(
       color: SakuraColors.sakura,
@@ -196,7 +198,7 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
       TextSpan(
         style: base,
         children: <InlineSpan>[
-          const TextSpan(text: 'Согласен с '),
+          TextSpan(text: l10n.premiumConsentPrefix),
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
@@ -204,10 +206,10 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               onTap: () {
                 context.push('/legal', extra: LegalDocuments.publicOffer);
               },
-              child: Text('офертой', style: link),
+              child: Text(l10n.premiumConsentOfferLink, style: link),
             ),
           ),
-          const TextSpan(text: ' и '),
+          TextSpan(text: l10n.premiumConsentAnd),
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
@@ -215,10 +217,10 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               onTap: () {
                 context.push('/legal', extra: LegalDocuments.consentPd);
               },
-              child: Text('согласием', style: link),
+              child: Text(l10n.premiumConsentPdLink, style: link),
             ),
           ),
-          const TextSpan(text: '.'),
+          TextSpan(text: l10n.premiumConsentSuffix),
         ],
       ),
     );

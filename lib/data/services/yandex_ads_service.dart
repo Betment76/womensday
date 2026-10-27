@@ -4,7 +4,7 @@ import 'package:womensday/core/constants/tbank_config.dart';
 import 'package:womensday/core/constants/yandex_ads_ids.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 
-/// Яндекс Mobile Ads (РСЯ): инициализация SDK и interstitial.
+/// Яндекс Mobile Ads (РСЯ): инициализация SDK, реклама при открытии и interstitial.
 class YandexAdsService {
   YandexAdsService(this._preferences)
     : isPremiumListenable = ValueNotifier<bool>(
@@ -45,6 +45,33 @@ class YandexAdsService {
       if (kDebugMode) {
         debugPrint('[YandexAds] Ошибка инициализации: $error');
       }
+    }
+  }
+
+  Future<void> executeShowAppOpen() async {
+    if (!isAdsEnabled) {
+      return;
+    }
+    if (!_isInitialized) {
+      await executeInitialize();
+    }
+    if (!_isInitialized || YandexAdsIds.appOpen.isEmpty) {
+      return;
+    }
+    AppOpenAd? ad;
+    try {
+      final AppOpenAdLoader loader = AppOpenAdLoader();
+      ad = await loader.loadAd(
+        adRequest: AdRequest(adUnitId: YandexAdsIds.appOpen),
+      );
+      await ad.show();
+      await ad.waitForDismiss();
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('[YandexAds] AppOpen: $error');
+      }
+    } finally {
+      await ad?.destroy();
     }
   }
 

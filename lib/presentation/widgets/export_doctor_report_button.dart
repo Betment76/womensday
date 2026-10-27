@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
 
 /// Кнопка выгрузки PDF для врача.
@@ -18,6 +19,7 @@ class _ExportDoctorReportButtonState
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -33,11 +35,13 @@ class _ExportDoctorReportButtonState
                   ),
                 )
               : const Icon(Icons.picture_as_pdf_outlined),
-          label: Text(_isExporting ? 'Готовим PDF…' : 'Выгрузить для врача'),
+          label: Text(
+            _isExporting ? l10n.exportDoctorPdfLoading : l10n.exportDoctorPdf,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Файл можно отправить врачу. Пока вы сами не отправите PDF, данные остаются на устройстве.',
+          l10n.exportDoctorPdfHint,
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: SakuraColors.wood),

@@ -1,23 +1,30 @@
-import 'package:flutter/foundation.dart';
+import 'package:womensday/core/constants/distribution_config.dart';
 
-/// Идентификаторы блоков РСЯ. Боевые — из кабинета Яндекса, demo — только debug.
+/// Идентификаторы блоков РСЯ по каналу дистрибуции (compile-time флейвор).
 abstract final class YandexAdsIds {
-  static const String productionBanner = '';
-  static const String productionInterstitial = 'R-M-20052446-1';
-  static const String demoBanner = 'demo-banner-yandex';
-  static const String demoInterstitial = 'demo-interstitial-yandex';
+  /// RuStore: реклама при открытии приложения.
+  static const String _rustoreAppOpen = 'R-M-20052446-2';
 
-  static String get banner {
-    if (productionBanner.isNotEmpty) {
-      return productionBanner;
-    }
-    return kDebugMode ? demoBanner : '';
+  /// RuStore: межстраничный блок.
+  static const String _rustoreInterstitial = 'R-M-20052446-1';
+
+  /// Google Play: реклама при открытии приложения.
+  static const String _googlePlayAppOpen = 'R-M-20123831-1';
+
+  /// Google Play: межстраничный блок.
+  static const String _googlePlayInterstitial = 'R-M-20123831-2';
+
+  /// Блок, показываемый при открытии приложения.
+  static String get appOpen {
+    return DistributionConfig.isGooglePlay
+        ? _googlePlayAppOpen
+        : _rustoreAppOpen;
   }
 
+  /// Межстраничный блок.
   static String get interstitial {
-    if (productionInterstitial.isNotEmpty) {
-      return productionInterstitial;
-    }
-    return kDebugMode ? demoInterstitial : '';
+    return DistributionConfig.isGooglePlay
+        ? _googlePlayInterstitial
+        : _rustoreInterstitial;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/widgets/sakura_background.dart';
 
 /// Полноэкранный просмотр юридического текста из [assetPath] (UTF-8).
@@ -29,6 +30,7 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SakuraBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -42,11 +44,11 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
               );
             }
             if (snapshot.hasError) {
-              return const Center(
+              return Center(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Text(
-                    'Не удалось загрузить документ.',
+                    l10n.legalDocumentLoadError,
                     textAlign: TextAlign.center,
                   ),
                 ),

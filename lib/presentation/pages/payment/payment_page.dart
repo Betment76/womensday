@@ -12,6 +12,7 @@ import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/data/services/appmetrica_service.dart';
 import 'package:womensday/data/services/tbank_payment_service.dart';
 import 'package:womensday/domain/entities/payment_session.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/premium_controller.dart';
 
 /// Оплата PayTbank: Custom Tabs, deeplink, опрос /status.php.
@@ -48,14 +49,22 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
   bool _isCompleted = false;
   bool _isPaid = false;
   bool _isVerifying = false;
-  String _statusText = 'Открываем форму Т‑Банка…';
+  String _statusText = '';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _listenToDeeplinks();
-    unawaited(_openPaymentUrl());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _statusText = AppLocalizations.of(context).paymentOpeningBank;
+      });
+      unawaited(_openPaymentUrl());
+    });
     _statusTimer = Timer.periodic(
       TBankConfig.statusPollInterval,
       (_) => unawaited(_verifyPayment()),
@@ -140,7 +149,9 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
         return;
       }
       if (!launched) {
-        setState(() => _statusText = 'Не удалось открыть форму оплаты.');
+        setState(
+          () => _statusText = AppLocalizations.of(context).paymentOpenFormFailed,
+        );
         return;
       }
     }
@@ -148,8 +159,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
       return;
     }
     setState(() {
-      _statusText =
-          'После оплаты вернитесь в приложение. Статус обновится сам.';
+      _statusText = AppLocalizations.of(context).paymentReturnHint;
     });
   }
 
@@ -166,10 +176,11 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
       if (!mounted) {
         return;
       }
+      final AppLocalizations l10n = AppLocalizations.of(context);
       setState(() {
         _statusText = status.bankStatus == null
-            ? 'Ожидание оплаты…'
-            : 'Статус: ${status.bankStatus}';
+            ? l10n.paymentWaiting
+            : l10n.paymentBankStatus(status.bankStatus!);
       });
       if (status.isPaid) {
         await _finish(paid: true);
@@ -211,9 +222,10 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
     if (!mounted) {
       return;
     }
+    final AppLocalizations l10n = AppLocalizations.of(context);
     setState(() {
       _isPaid = paid;
-      _statusText = paid ? 'Оплата прошла успешно' : 'Платёж не завершён';
+      _statusText = paid ? l10n.paymentSuccess : l10n.paymentNotCompleted;
     });
   }
 
@@ -230,13 +242,14 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Номер заказа скопирован')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).paymentOrderCopied)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
@@ -270,7 +283,9 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
                 children: [
                   Expanded(
                     child: Text(
-                      'Оплата ${widget.session.amountRubles.toStringAsFixed(0)} ₽',
+                      l10n.paymentSheetTitle(
+                        widget.session.amountRubles.round(),
+                      ),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -284,9 +299,9 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 12),
               if (_isPaid)
-                _buildSuccess()
+                _buildSuccess(l10n)
               else if (_isCompleted)
-                _buildFailed()
+                _buildFailed(l10n)
               else
                 _buildPending(),
             ],
@@ -309,7 +324,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildFailed() {
+  Widget _buildFailed(AppLocalizations l10n) {
     return Column(
       children: [
         const Icon(
@@ -318,14 +333,14 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
           size: 56,
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Оплата не прошла',
+        Text(
+          l10n.paymentFailedTitle,
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'Попробуйте ещё раз или воспользуйтесь другим способом оплаты в вашем банке.',
+        Text(
+          l10n.paymentFailedBody,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
@@ -333,34 +348,34 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
           width: double.infinity,
           child: FilledButton(
             onPressed: () => unawaited(_onClose()),
-            child: const Text('Понятно'),
+            child: Text(l10n.paymentGotIt),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSuccess() {
+  Widget _buildSuccess(AppLocalizations l10n) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Премиум активирован',
+        Text(
+          l10n.paymentPremiumActivatedTitle,
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Сохраните номер заказа — он нужен, чтобы восстановить покупку.',
+        Text(
+          l10n.paymentSaveOrderHint,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
-        _buildOrderIdBlock(),
+        _buildOrderIdBlock(l10n),
       ],
     );
   }
 
-  Widget _buildOrderIdBlock() {
+  Widget _buildOrderIdBlock(AppLocalizations l10n) {
     return Column(
       children: [
         SelectableText(
@@ -378,7 +393,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
           child: OutlinedButton.icon(
             onPressed: () => unawaited(_copyOrderId()),
             icon: const Icon(Icons.copy),
-            label: const Text('Скопировать'),
+            label: Text(l10n.paymentCopyOrder),
           ),
         ),
       ],

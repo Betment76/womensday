@@ -1,7 +1,7 @@
 name: womensday
 description: Мой женский календарь.
 publish_to: "none"
-version: 1.0.2+3
+version: 1.0.4+5
 
 environment:
   sdk: ^3.12.2
@@ -57,6 +57,8 @@ flutter:
   assets:
     - assets/mood/
     - assets/legal/
+    - assets/legal/rustore/
+    - assets/legal/googleplay/
     - assets/fonts/
     - assets/icons/
     - assets/certs/

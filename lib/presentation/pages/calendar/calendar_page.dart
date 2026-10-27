@@ -4,7 +4,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/cycle_forecast.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/widgets/day_details_card.dart';
 import 'package:womensday/presentation/widgets/legend_item.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
@@ -22,6 +24,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final String calendarLocale = ref.watch(localeControllerProvider).languageCode ==
+            'en'
+        ? 'en_US'
+        : 'ru_RU';
     final CycleForecast forecast = ref
         .watch(calendarControllerProvider)
         .forecast;
@@ -44,7 +51,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             child: Column(
               children: [
                 Text(
-                  'Календарь',
+                  l10n.calendarTitle,
                   textAlign: TextAlign.center,
                   style: Theme.of(
                     context,
@@ -54,7 +61,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 SectionCard(
                   padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
                   child: TableCalendar<void>(
-                    locale: 'ru_RU',
+                    locale: calendarLocale,
                     firstDay: DateTime(2020, 1, 1),
                     lastDay: DateTime(2035, 12, 31),
                     focusedDay: _focusedDay.dateOnly,
@@ -158,24 +165,30 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const FittedBox(
+                FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      LegendItem(color: SakuraColors.sakura, label: 'Месячные'),
-                      SizedBox(width: 12),
+                      LegendItem(
+                        color: SakuraColors.sakura,
+                        label: l10n.legendPeriod,
+                      ),
+                      const SizedBox(width: 12),
                       LegendItem(
                         color: SakuraColors.blossom,
-                        label: 'Прогноз',
+                        label: l10n.legendForecast,
                         isOutlined: true,
                       ),
-                      SizedBox(width: 12),
-                      LegendItem(color: SakuraColors.leaf, label: 'Фертильные'),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                      LegendItem(
+                        color: SakuraColors.leaf,
+                        label: l10n.legendFertile,
+                      ),
+                      const SizedBox(width: 12),
                       LegendItem(
                         color: SakuraColors.ovulation,
-                        label: 'Овуляция',
+                        label: l10n.legendOvulation,
                       ),
                     ],
                   ),

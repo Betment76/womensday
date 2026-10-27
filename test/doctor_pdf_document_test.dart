@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:womensday/data/services/doctor_pdf_document.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/domain/entities/calendar_data.dart';
 import 'package:womensday/domain/entities/cycle_forecast.dart';
 import 'package:womensday/domain/entities/cycle_phase.dart';
@@ -56,6 +58,7 @@ void main() {
     final DoctorPdfDocument document = DoctorPdfDocument(
       regular: pw.Font.ttf(regularData),
       bold: pw.Font.ttf(boldData),
+      strings: AppLocalizations.lookup(const Locale('ru')),
     );
     final List<int> bytes = await document.executeBuild(report);
     expect(bytes.length, greaterThan(1000));

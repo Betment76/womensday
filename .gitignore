@@ -50,3 +50,6 @@ app.*.map.json
 android/key.properties
 pepk.jar
 /rustore/
+
+# Dart-define файлы сборки (DISTRIBUTION, ключ AppMetrica) — не в репозиторий
+/config/

@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:womensday/core/constants/calendar_message_codes.dart';
+import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/di/calendar_bootstrap.dart';
 import 'package:womensday/data/datasources/calendar_local_datasource.dart';
 import 'package:womensday/data/repositories/calendar_repository_impl.dart';
@@ -27,7 +29,9 @@ final GetIt getIt = GetIt.instance;
 Future<void> executeDependencyInjection() async {
   await getIt.reset();
   final SharedPreferences preferences = await SharedPreferences.getInstance();
-  final NotificationService notificationService = NotificationService();
+  final NotificationService notificationService = NotificationService(
+    preferences: preferences,
+  );
   try {
     await notificationService.executeInitialize();
   } catch (_) {
@@ -39,28 +43,31 @@ Future<void> executeDependencyInjection() async {
   final AppMetricaService appMetricaService = AppMetricaService();
   await appMetricaService.executeInitialize();
   getIt.registerSingleton<AppMetricaService>(appMetricaService);
-  final RustoreReviewService rustoreReviewService = RustoreReviewService();
-  await rustoreReviewService.executeInitialize();
-  getIt.registerSingleton<RustoreReviewService>(rustoreReviewService);
-  getIt.registerSingleton<RustoreUpdateService>(RustoreUpdateService());
+  if (DistributionConfig.ruStoreSdkEnabled) {
+    final RustoreReviewService rustoreReviewService = RustoreReviewService();
+    await rustoreReviewService.executeInitialize();
+    getIt.registerSingleton<RustoreReviewService>(rustoreReviewService);
+    getIt.registerSingleton<RustoreUpdateService>(RustoreUpdateService());
+  }
   final YandexAdsService yandexAdsService = YandexAdsService(preferences);
   await yandexAdsService.executeInitialize();
   getIt.registerSingleton<YandexAdsService>(yandexAdsService);
-  final http.Client tbankClient = await TBankHttpClient.getClient();
-  getIt.registerSingleton<TBankPaymentService>(
-    TBankPaymentService(client: tbankClient),
-  );
-  final RustorePayService rustorePayService = RustorePayService(
-    ads: yandexAdsService,
-  );
-  await rustorePayService.executeInitialize();
-  getIt.registerSingleton<RustorePayService>(rustorePayService);
+  TBankPaymentService? tbankPayments;
+  RustorePayService? rustorePay;
+  if (DistributionConfig.paymentsEnabled) {
+    final http.Client tbankClient = await TBankHttpClient.getClient();
+    tbankPayments = TBankPaymentService(client: tbankClient);
+    getIt.registerSingleton<TBankPaymentService>(tbankPayments);
+    rustorePay = RustorePayService(ads: yandexAdsService);
+    await rustorePay.executeInitialize();
+    getIt.registerSingleton<RustorePayService>(rustorePay);
+  }
   getIt.registerSingleton<PremiumEntitlementService>(
     PremiumEntitlementService(
       preferences: preferences,
       ads: yandexAdsService,
-      payments: getIt<TBankPaymentService>(),
-      rustorePay: getIt<RustorePayService>(),
+      payments: tbankPayments,
+      rustorePay: rustorePay,
     ),
   );
   getIt.registerLazySingleton<CalendarLocalDatasource>(
@@ -71,7 +78,10 @@ Future<void> executeDependencyInjection() async {
   );
   getIt.registerLazySingleton<CycleCalculator>(CycleCalculator.new);
   getIt.registerLazySingleton<CycleReportBuilder>(CycleReportBuilder.new);
-  getIt.registerLazySingleton<DoctorReportExporter>(DoctorPdfService.new);
+  getIt.registerLazySingleton<DoctorReportExporter>(
+    () => DoctorPdfService(preferences: preferences),
+  );
+
   getIt.registerSingleton<CalendarBootstrap>(await executeLoadBootstrap());
 }
 
@@ -82,7 +92,7 @@ Future<CalendarBootstrap> executeLoadBootstrap() async {
   } catch (_) {
     return CalendarBootstrap(
       data: CalendarData.createEmpty(),
-      errorMessage: 'Не удалось загрузить календарь',
+      errorMessage: CalendarMessageCode.loadFailed,
     );
   }
 }

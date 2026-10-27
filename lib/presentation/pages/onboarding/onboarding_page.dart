@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/widgets/number_stepper.dart';
 import 'package:womensday/presentation/widgets/sakura_background.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
@@ -31,6 +33,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SakuraBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -44,7 +47,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 SizedBox(
                   width: double.infinity,
                   child: Text(
-                    AppConstants.appName,
+                    l10n.appName,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -54,7 +57,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 SizedBox(
                   width: double.infinity,
                   child: Text(
-                    AppConstants.appSubtitle,
+                    l10n.appSubtitle,
                     textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
@@ -79,13 +82,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: executeContinue,
-                  child: Text(_step == 2 ? 'Начать' : 'Далее'),
+                  child: Text(_step == 2 ? l10n.onboardingStart : l10n.onboardingNext),
                 ),
                 if (_step > 0) ...[
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: executeBack,
-                    child: const Text('Назад'),
+                    child: Text(l10n.onboardingBack),
                   ),
                 ],
               ],
@@ -117,22 +120,23 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Widget executeWelcomeStep(BuildContext context) {
-    return const SectionCard(
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return SectionCard(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Тихий календарь для себя',
+            l10n.onboardingWelcomeTitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: SakuraColors.branch,
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            'Отмечайте месячные в одно касание. Прогноз, овуляция и самочувствие остаются только на этом устройстве.',
+            l10n.onboardingWelcomeBody,
             textAlign: TextAlign.center,
           ),
         ],
@@ -141,16 +145,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Widget executeDateStep(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final String localeTag = ref.watch(localeControllerProvider).languageCode;
     final String label = DateFormat(
       'd MMMM yyyy',
-      'ru',
+      localeTag,
     ).format(_lastPeriodStart);
     return SectionCard(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Когда начались последние месячные?',
+            l10n.onboardingDateTitle,
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
@@ -167,7 +173,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           const SizedBox(height: 16),
           OutlinedButton(
             onPressed: executePickDate,
-            child: const Text('Выбрать дату'),
+            child: Text(l10n.pickDate),
           ),
         ],
       ),
@@ -175,21 +181,24 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Widget executeCycleStep(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SectionCard(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           NumberStepper(
-            label: 'Обычная длина цикла',
+            label: l10n.cycleLengthLabel,
             value: _cycleLength,
+            unit: l10n.daysUnit,
             min: AppConstants.minCycleLength,
             max: AppConstants.maxCycleLength,
             onChanged: (int value) => setState(() => _cycleLength = value),
           ),
           const SizedBox(height: 28),
           NumberStepper(
-            label: 'Длительность месячных',
+            label: l10n.periodDurationLabel,
             value: _periodDuration,
+            unit: l10n.daysUnit,
             min: AppConstants.minPeriodDuration,
             max: AppConstants.maxPeriodDuration,
             onChanged: (int value) => setState(() => _periodDuration = value),
@@ -200,14 +209,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Future<void> executePickDate() async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final Locale locale = ref.read(localeControllerProvider);
     final DateTime now = DateTime.now();
     final DateTime? selected = await showDatePicker(
       context: context,
-      locale: const Locale('ru'),
+      locale: locale,
       initialDate: _lastPeriodStart,
       firstDate: now.subtract(const Duration(days: 90)),
       lastDate: now,
-      helpText: 'Начало последних месячных',
+      helpText: l10n.datePickerHelp,
     );
     if (selected == null) {
       return;

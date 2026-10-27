@@ -13,7 +13,9 @@ import 'package:womensday/domain/entities/day_log.dart';
 import 'package:womensday/domain/entities/flow_intensity.dart';
 import 'package:womensday/domain/entities/mood.dart';
 import 'package:womensday/domain/entities/symptom.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/widgets/capsule_switch.dart';
 import 'package:womensday/presentation/widgets/mood_picker.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
@@ -76,18 +78,20 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final String localeTag = ref.watch(localeControllerProvider).languageCode;
     ref.watch(calendarControllerProvider);
     final DayLog log = ref
         .read(calendarControllerProvider.notifier)
         .executeReadLog(widget.date);
     final double gap = widget.isCompact ? 8 : 12;
     if (widget.fillAvailableHeight && widget.showSaveButton) {
-      return executeFillHeightLayout(log, gap);
+      return executeFillHeightLayout(l10n, log, gap);
     }
     final List<Widget> fields = <Widget>[
       if (widget.showDateTitle) ...[
         Text(
-          DateFormat('d MMMM yyyy', 'ru').format(widget.date),
+          DateFormat('d MMMM yyyy', localeTag).format(widget.date),
           textAlign: TextAlign.center,
           style: Theme.of(
             context,
@@ -95,17 +99,20 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
         ),
         SizedBox(height: gap),
       ],
-      executePeriodCard(log),
-      if (log.isPeriod) ...[SizedBox(height: gap), executeFlowCard(log)],
+      executePeriodCard(l10n, log),
+      if (log.isPeriod) ...[
+        SizedBox(height: gap),
+        executeFlowCard(l10n, log),
+      ],
       SizedBox(height: gap),
       SectionCard(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Настроение',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+            Text(
+              l10n.mood,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
             ),
             const SizedBox(height: 4),
             MoodPicker(
@@ -126,9 +133,9 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Самочувствие',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+            Text(
+              l10n.wellbeing,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
             ),
             const SizedBox(height: 4),
             SymptomPicker(
@@ -141,7 +148,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
         ),
       ),
       SizedBox(height: gap),
-      KeyedSubtree(key: _noteKey, child: executeNoteCard()),
+      KeyedSubtree(key: _noteKey, child: executeNoteCard(l10n)),
     ];
     final Widget fieldsColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,6 +158,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
       return fieldsColumn;
     }
     return executeTodayStack(
+      l10n: l10n,
       log: log,
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -159,26 +167,34 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executeFillHeightLayout(DayLog log, double gap) {
+  Widget executeFillHeightLayout(
+    AppLocalizations l10n,
+    DayLog log,
+    double gap,
+  ) {
     return executeTodayStack(
+      l10n: l10n,
       log: log,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (widget.leading != null) Expanded(flex: 2, child: widget.leading!),
           SizedBox(height: gap),
-          executePeriodCard(log),
-          if (log.isPeriod) ...[SizedBox(height: gap), executeFlowCard(log)],
+          executePeriodCard(l10n, log),
+          if (log.isPeriod) ...[
+            SizedBox(height: gap),
+            executeFlowCard(l10n, log),
+          ],
           SizedBox(height: gap),
-          Expanded(flex: 3, child: executeMoodCard(log, fill: true)),
+          Expanded(flex: 3, child: executeMoodCard(l10n, log, fill: true)),
           SizedBox(height: gap),
-          Expanded(flex: 2, child: executeSymptomsCard(log, fill: true)),
+          Expanded(flex: 2, child: executeSymptomsCard(l10n, log, fill: true)),
           SizedBox(height: gap),
           Expanded(
             flex: 1,
             child: KeyedSubtree(
               key: _noteKey,
-              child: executeNoteCard(fill: true),
+              child: executeNoteCard(l10n, fill: true),
             ),
           ),
         ],
@@ -186,7 +202,11 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executeTodayStack({required DayLog log, required Widget body}) {
+  Widget executeTodayStack({
+    required AppLocalizations l10n,
+    required DayLog log,
+    required Widget body,
+  }) {
     final bool hasPendingSave = executeHasPendingSave(log);
     final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final double saveButtonGap = hasPendingSave ? 56 : 0;
@@ -211,7 +231,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
               duration: AppConstants.animationDuration,
               curve: AppConstants.animationCurve,
               offset: hasPendingSave ? Offset.zero : const Offset(0, 1.15),
-              child: executeSaveButton(),
+              child: executeSaveButton(l10n),
             ),
           ),
         ),
@@ -219,15 +239,15 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executePeriodCard(DayLog log) {
+  Widget executePeriodCard(AppLocalizations l10n, DayLog log) {
     return SectionCard(
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Месячные',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              l10n.period,
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
           CapsuleSwitch(
@@ -241,36 +261,40 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executeFlowCard(DayLog log) {
+  Widget executeFlowCard(AppLocalizations l10n, DayLog log) {
     return SectionCard(
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
       child: Row(
         children: [
-          const Text(
-            'Выделения',
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            l10n.flow,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(width: 8),
-          Expanded(child: executeFlowButton(log, FlowIntensity.light)),
+          Expanded(child: executeFlowButton(l10n, log, FlowIntensity.light)),
           const SizedBox(width: 6),
-          Expanded(child: executeFlowButton(log, FlowIntensity.medium)),
+          Expanded(child: executeFlowButton(l10n, log, FlowIntensity.medium)),
           const SizedBox(width: 6),
-          Expanded(child: executeFlowButton(log, FlowIntensity.heavy)),
+          Expanded(child: executeFlowButton(l10n, log, FlowIntensity.heavy)),
         ],
       ),
     );
   }
 
-  Widget executeMoodCard(DayLog log, {required bool fill}) {
+  Widget executeMoodCard(
+    AppLocalizations l10n,
+    DayLog log, {
+    required bool fill,
+  }) {
     return SectionCard(
       expand: fill,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Настроение',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          Text(
+            l10n.mood,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           ),
           const SizedBox(height: 6),
           Expanded(
@@ -289,16 +313,20 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executeSymptomsCard(DayLog log, {required bool fill}) {
+  Widget executeSymptomsCard(
+    AppLocalizations l10n,
+    DayLog log, {
+    required bool fill,
+  }) {
     return SectionCard(
       expand: fill,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Самочувствие',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          Text(
+            l10n.wellbeing,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           ),
           const SizedBox(height: 6),
           Expanded(
@@ -317,7 +345,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     );
   }
 
-  Widget executeSaveButton() {
+  Widget executeSaveButton(AppLocalizations l10n) {
     return FilledButton(
       onPressed: _isSaving ? null : () => unawaited(executeSaveWithAd()),
       child: _isSaving
@@ -326,11 +354,11 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : const Text('Сохранить'),
+          : Text(l10n.save),
     );
   }
 
-  Widget executeNoteCard({bool fill = false}) {
+  Widget executeNoteCard(AppLocalizations l10n, {bool fill = false}) {
     final bool isExpanded = widget.expandNote || fill;
     final Widget field = TextField(
       controller: _noteController,
@@ -347,9 +375,9 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
           : TextInputAction.done,
       decoration: InputDecoration(
         hintText: isExpanded || widget.noteMaxLines == 1
-            ? 'Заметка'
-            : 'Коротко, если нужно',
-        labelText: isExpanded || widget.noteMaxLines == 1 ? null : 'Заметка',
+            ? l10n.noteHint
+            : l10n.noteHintShort,
+        labelText: isExpanded || widget.noteMaxLines == 1 ? null : l10n.noteHint,
         alignLabelWithHint: true,
         border: InputBorder.none,
         isDense: !isExpanded && widget.noteMaxLines == 1,
@@ -374,13 +402,17 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     return card;
   }
 
-  Widget executeFlowButton(DayLog log, FlowIntensity value) {
+  Widget executeFlowButton(
+    AppLocalizations l10n,
+    DayLog log,
+    FlowIntensity value,
+  ) {
     final bool isSelected = log.flow == value;
     final Color dropColor = isSelected
         ? SakuraColors.sakura
         : SakuraColors.wood;
     return Tooltip(
-      message: value.title,
+      message: l10n.flowTitle(value),
       child: InkWell(
         onTap: () {
           executeSave(

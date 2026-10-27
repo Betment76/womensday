@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/widgets/sakura_background.dart';
 
 /// Экран загрузки и ошибки старта.
@@ -12,6 +12,7 @@ class SplashPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SakuraBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -24,7 +25,7 @@ class SplashPage extends StatelessWidget {
                 const SakuraMark(size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  AppConstants.appName,
+                  l10n.appName,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
@@ -42,7 +43,7 @@ class SplashPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: onRetry,
-                    child: const Text('Повторить'),
+                    child: Text(l10n.retry),
                   ),
                 ],
               ],

@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:womensday/core/constants/app_constants.dart';
+import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/router/app_router.dart';
 import 'package:womensday/core/theme/app_theme.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
+import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/presentation/controllers/premium_controller.dart';
 
 /// Корневой виджет приложения.
@@ -41,7 +43,8 @@ class _SakuraAppState extends ConsumerState<SakuraApp>
       imageCache.clear();
       imageCache.clearLiveImages();
     }
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed &&
+        DistributionConfig.paymentsEnabled) {
       unawaited(
         ref.read(premiumControllerProvider.notifier).executeReconcile(),
       );
@@ -51,25 +54,31 @@ class _SakuraAppState extends ConsumerState<SakuraApp>
   @override
   Widget build(BuildContext context) {
     final GoRouter router = ref.watch(goRouterProvider);
+    final Locale locale = ref.watch(localeControllerProvider);
+    final AppLocalizations strings = AppLocalizations.lookup(locale);
     ref.listen<CalendarState>(calendarControllerProvider, (
       CalendarState? previous,
       CalendarState next,
     ) {
-      final String? message = next.persistErrorMessage;
-      if (message == null || message == previous?.persistErrorMessage) {
+      final String? code = next.persistErrorMessage;
+      if (code == null || code == previous?.persistErrorMessage) {
         return;
       }
+      final AppLocalizations snackStrings = AppLocalizations.lookup(
+        ref.read(localeControllerProvider),
+      );
       _messengerKey.currentState?.showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text(snackStrings.messageForCode(code))),
       );
     });
     return MaterialApp.router(
-      title: AppConstants.appName,
+      title: strings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.createLightTheme(),
-      locale: const Locale('ru'),
-      supportedLocales: const <Locale>[Locale('ru'), Locale('en')],
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

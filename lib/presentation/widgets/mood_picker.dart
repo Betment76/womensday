@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/mood.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/widgets/mood_face.dart';
 
 /// Ряд лиц для выбора настроения.
@@ -19,12 +20,13 @@ class MoodPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Row(
       children: Mood.values.map((Mood mood) {
         final bool isSelected = selected == mood;
         return Expanded(
           child: Tooltip(
-            message: mood.title,
+            message: l10n.moodTitle(mood),
             child: InkWell(
               onTap: () => onSelected(isSelected ? null : mood),
               customBorder: const CircleBorder(),

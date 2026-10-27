@@ -6,6 +6,7 @@ import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/di/injection.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/data/services/rustore_pay_service.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/controllers/premium_controller.dart';
 
 /// Восстановление премиума по номеру заказа (СБП) или через RuStore.
@@ -22,19 +23,20 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return TextButton(
-      onPressed: _isRestoring ? null : () => unawaited(executeShowSheet()),
+      onPressed: _isRestoring ? null : () => unawaited(executeShowSheet(l10n)),
       child: _isRestoring
           ? const SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : const Text('Восстановить покупку'),
+          : Text(l10n.premiumRestoreButton),
     );
   }
 
-  Future<void> executeShowSheet() async {
+  Future<void> executeShowSheet(AppLocalizations l10n) async {
     final TextEditingController controller = TextEditingController();
     final String? orderId = await showModalBottomSheet<String>(
       context: context,
@@ -69,14 +71,14 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
                     ),
                   ),
                   Text(
-                    'Восстановить покупку',
+                    l10n.premiumRestoreTitle,
                     textAlign: TextAlign.center,
                     style: Theme.of(sheetContext).textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Введите номер заказа из чека или с экрана после оплаты.',
+                  Text(
+                    l10n.premiumRestoreBody,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -84,13 +86,13 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
                     controller: controller,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                      labelText: 'Номер заказа',
+                    decoration: InputDecoration(
+                      labelText: l10n.premiumOrderIdLabel,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Если номер утерян — напишите на ${AppConstants.supportEmail}',
+                    l10n.premiumRestoreSupportLine(AppConstants.supportEmail),
                     textAlign: TextAlign.center,
                     style: Theme.of(sheetContext).textTheme.bodySmall,
                   ),
@@ -99,17 +101,17 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
                     onPressed: () {
                       Navigator.pop(sheetContext, controller.text.trim());
                     },
-                    child: const Text('Восстановить'),
+                    child: Text(l10n.premiumRestoreAction),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => Navigator.pop(sheetContext, '__rustore__'),
-                    child: const Text('Восстановить через RuStore'),
+                    child: Text(l10n.premiumRestoreViaRustore),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.pop(sheetContext),
-                    child: const Text('Отмена'),
+                    child: Text(l10n.cancel),
                   ),
                 ],
               ),
@@ -128,13 +130,13 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
       return;
     }
     if (orderId == '__rustore__') {
-      await _executeRestoreRustore();
+      await _executeRestoreRustore(l10n);
       return;
     }
     if (orderId.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Введите номер заказа')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.premiumEnterOrderId)),
+      );
       return;
     }
     setState(() => _isRestoring = true);
@@ -148,9 +150,7 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            restored
-                ? 'Покупка восстановлена. Премиум активирован.'
-                : 'Платёж не найден или не был успешным. Проверьте номер заказа.',
+            restored ? l10n.premiumRestoreSuccess : l10n.premiumRestoreNotFound,
           ),
         ),
       );
@@ -159,7 +159,7 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось проверить платёж')),
+        SnackBar(content: Text(l10n.premiumRestoreCheckFailed)),
       );
     } finally {
       if (mounted) {
@@ -168,7 +168,7 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
     }
   }
 
-  Future<void> _executeRestoreRustore() async {
+  Future<void> _executeRestoreRustore(AppLocalizations l10n) async {
     setState(() => _isRestoring = true);
     try {
       final RustorePayService rustore = getIt<RustorePayService>();
@@ -182,8 +182,8 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
         SnackBar(
           content: Text(
             isPremium
-                ? 'Покупка RuStore восстановлена. Премиум активирован.'
-                : 'Активная покупка RuStore не найдена.',
+                ? l10n.premiumRestoreRustoreSuccess
+                : l10n.premiumRestoreRustoreNotFound,
           ),
         ),
       );
@@ -192,7 +192,7 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось восстановить покупку RuStore')),
+        SnackBar(content: Text(l10n.premiumRestoreRustoreFailed)),
       );
     } finally {
       if (mounted) {

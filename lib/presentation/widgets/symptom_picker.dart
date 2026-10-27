@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/symptom.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/widgets/symptom_glyph.dart';
 
 /// Равномерная сетка недомоганий.
@@ -19,6 +20,7 @@ class SymptomPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<Widget> rows = <Widget>[];
     for (int offset = 0; offset < Symptom.values.length; offset += _columns) {
       final List<Symptom> chunk = Symptom.values
@@ -31,7 +33,7 @@ class SymptomPicker extends StatelessWidget {
       rows.add(
         Row(
           children: chunk.map((Symptom symptom) {
-            return Expanded(child: executeTile(symptom));
+            return Expanded(child: executeTile(l10n, symptom));
           }).toList(),
         ),
       );
@@ -39,7 +41,7 @@ class SymptomPicker extends StatelessWidget {
     return Column(children: rows);
   }
 
-  Widget executeTile(Symptom symptom) {
+  Widget executeTile(AppLocalizations l10n, Symptom symptom) {
     final bool isSelected = selected.contains(symptom);
     return InkWell(
       onTap: () => executeToggle(symptom, isSelected),
@@ -63,7 +65,7 @@ class SymptomPicker extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              symptom.title,
+              l10n.symptomTitle(symptom),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
