@@ -7,8 +7,8 @@ import 'package:womensday/app.dart';
 import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/di/calendar_bootstrap.dart';
 import 'package:womensday/core/di/injection.dart';
+import 'package:womensday/data/services/app_update_service.dart';
 import 'package:womensday/data/services/premium_entitlement_service.dart';
-import 'package:womensday/data/services/rustore_update_service.dart';
 import 'package:womensday/data/services/yandex_ads_service.dart';
 
 /// Старт до runApp — только быстрые локальные операции: первый кадр не должен
@@ -50,8 +50,9 @@ Future<void> main() async {
   }
   if (DistributionConfig.paymentsEnabled) {
     unawaited(getIt<PremiumEntitlementService>().executeReconcile());
-    unawaited(getIt<RustoreUpdateService>().executeCheckAndApply());
   }
+  // Проверка обновлений магазина (RuStore / Google Play по флавору).
+  unawaited(getIt<AppUpdateService>().executeCheckAndApply());
   // Реклама при открытии: только для тех, кто уже прошёл онбординг.
   if (getIt<CalendarBootstrap>().data.isOnboardingCompleted) {
     unawaited(getIt<YandexAdsService>().executeShowAppOpen());

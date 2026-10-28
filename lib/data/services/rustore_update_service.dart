@@ -3,13 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_rustore_update/flutter_rustore_update.dart';
+import 'package:womensday/data/services/app_update_service.dart';
 
 /// RuStore In-app Updates: отложенное обновление без своего UI.
-class RustoreUpdateService {
+class RustoreUpdateService implements AppUpdateService {
   bool _isStarted = false;
   bool _isCompleting = false;
   StreamSubscription<RequestResponse>? _stateSubscription;
 
+  @override
   Future<void> executeCheckAndApply() async {
     if (_isStarted || !Platform.isAndroid) {
       return;

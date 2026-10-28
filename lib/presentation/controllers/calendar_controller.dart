@@ -5,7 +5,7 @@ import 'package:womensday/core/constants/calendar_message_codes.dart';
 import 'package:womensday/core/di/calendar_bootstrap.dart';
 import 'package:womensday/core/di/injection.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
-import 'package:womensday/data/services/rustore_review_service.dart';
+import 'package:womensday/data/services/app_review_service.dart';
 import 'package:womensday/domain/entities/calendar_data.dart';
 import 'package:womensday/domain/entities/cycle_forecast.dart';
 import 'package:womensday/domain/entities/cycle_report.dart';
@@ -172,16 +172,8 @@ class CalendarController extends Notifier<CalendarState> {
       ),
     );
     if (state.persistErrorMessage == null) {
-      unawaited(_executeMaybeRequestReview());
+      unawaited(getIt<AppReviewService>().executeMaybeRequestReview());
     }
-  }
-
-  /// Естественный момент для формы оценки RuStore — после сохранения дня.
-  Future<void> _executeMaybeRequestReview() async {
-    if (!getIt.isRegistered<RustoreReviewService>()) {
-      return;
-    }
-    await getIt<RustoreReviewService>().executeMaybeRequestReview();
   }
 
   Future<void> executeUpdateSettings(CycleSettings settings) async {

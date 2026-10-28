@@ -8,8 +8,12 @@ import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/di/calendar_bootstrap.dart';
 import 'package:womensday/data/datasources/calendar_local_datasource.dart';
 import 'package:womensday/data/repositories/calendar_repository_impl.dart';
+import 'package:womensday/data/services/app_review_service.dart';
+import 'package:womensday/data/services/app_update_service.dart';
 import 'package:womensday/data/services/appmetrica_service.dart';
 import 'package:womensday/data/services/doctor_pdf_service.dart';
+import 'package:womensday/data/services/google_play_review_service.dart';
+import 'package:womensday/data/services/google_play_update_service.dart';
 import 'package:womensday/data/services/notification_service.dart';
 import 'package:womensday/data/services/premium_entitlement_service.dart';
 import 'package:womensday/data/services/rustore_pay_service.dart';
@@ -42,12 +46,18 @@ Future<void> executeDependencyInjection() async {
   final AppMetricaService appMetricaService = AppMetricaService();
   getIt.registerSingleton<AppMetricaService>(appMetricaService);
   unawaited(appMetricaService.executeInitialize());
+  if (DistributionConfig.isGooglePlay) {
+    getIt.registerSingleton<AppUpdateService>(GooglePlayUpdateService());
+    getIt.registerSingleton<AppReviewService>(
+      GooglePlayReviewService(preferences: preferences),
+    );
+  }
   if (DistributionConfig.ruStoreSdkEnabled) {
     final RustoreReviewService rustoreReviewService = RustoreReviewService(
       preferences: preferences,
     );
-    getIt.registerSingleton<RustoreReviewService>(rustoreReviewService);
-    getIt.registerSingleton<RustoreUpdateService>(RustoreUpdateService());
+    getIt.registerSingleton<AppReviewService>(rustoreReviewService);
+    getIt.registerSingleton<AppUpdateService>(RustoreUpdateService());
     unawaited(rustoreReviewService.executeInitialize());
   }
   final YandexAdsService yandexAdsService = YandexAdsService(preferences);

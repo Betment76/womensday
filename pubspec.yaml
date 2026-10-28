@@ -36,6 +36,8 @@ dependencies:
   yandex_mobileads: ^8.6.0
   package_info_plus: ^10.2.2
   http: ^1.6.0
+  in_app_review: ^2.0.12
+  in_app_update: ^5.0.0
 
 dev_dependencies:
   flutter_test:
