@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
+import 'package:womensday/l10n/app_localizations.dart';
 import 'package:womensday/presentation/widgets/section_card.dart';
 
 /// Раскрывающаяся почта поддержки на экране «О приложении».
@@ -17,6 +18,7 @@ class _DeveloperContactCardState extends State<DeveloperContactCard> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SectionCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -35,7 +37,7 @@ class _DeveloperContactCardState extends State<DeveloperContactCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Написать разработчику',
+                      l10n.writeToDeveloper,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -98,8 +100,9 @@ class _DeveloperContactCardState extends State<DeveloperContactCard> {
     if (!mounted) {
       return;
     }
+    final AppLocalizations l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Адрес скопирован')));
+    ).showSnackBar(SnackBar(content: Text(l10n.addressCopied)));
   }
 }

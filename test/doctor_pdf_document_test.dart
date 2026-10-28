@@ -19,10 +19,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('PDF собирается из шрифтов и отчёта', () async {
-    final Uint8List regularBytes =
-        await File('assets/fonts/NotoSans-Regular.ttf').readAsBytes();
-    final Uint8List boldBytes =
-        await File('assets/fonts/NotoSans-Bold.ttf').readAsBytes();
+    final Uint8List regularBytes = await File(
+      'assets/fonts/NotoSans-Regular.ttf',
+    ).readAsBytes();
+    final Uint8List boldBytes = await File(
+      'assets/fonts/NotoSans-Bold.ttf',
+    ).readAsBytes();
     final ByteData regularData = ByteData.sublistView(regularBytes);
     final ByteData boldData = ByteData.sublistView(boldBytes);
     final DateTime today = DateTime(2026, 9, 7);

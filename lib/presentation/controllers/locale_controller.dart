@@ -1,28 +1,65 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/core/di/injection.dart';
+import 'package:womensday/core/utils/system_locale.dart';
 import 'package:womensday/domain/entities/cycle_settings.dart';
 import 'package:womensday/presentation/controllers/calendar_controller.dart';
 
-/// Ключ языка интерфейса в SharedPreferences.
-const String kAppLocaleKey = 'app_locale_code';
-
-/// Выбранная локаль приложения (ru / en).
+/// Выбранная локаль приложения: ручной выбор или следование за системой.
 class LocaleController extends Notifier<Locale> {
   @override
   Locale build() {
-    final String code =
-        getIt<SharedPreferences>().getString(kAppLocaleKey) ?? 'ru';
+    final String? stored = getIt<SharedPreferences>().getString(
+      AppConstants.localeKey,
+    );
+    if (stored != null) {
+      return _executeParseLocale(stored);
+    }
+    _executeSubscribeToSystemChanges();
+    return executeResolveSystemLocale();
+  }
+
+  Future<void> executeSetLocale(Locale locale) async {
+    await getIt<SharedPreferences>().setString(
+      AppConstants.localeKey,
+      _executeFormatLocale(locale),
+    );
+    state = locale;
+  }
+
+  /// Вернуться к автоопределению по языку телефона.
+  Future<void> executeUseSystemLocale() async {
+    await getIt<SharedPreferences>().remove(AppConstants.localeKey);
+    _executeSubscribeToSystemChanges();
+    state = executeResolveSystemLocale();
+  }
+
+  void _executeSubscribeToSystemChanges() {
+    PlatformDispatcher.instance.onLocaleChanged = () {
+      state = executeResolveSystemLocale();
+    };
+    ref.onDispose(() {
+      PlatformDispatcher.instance.onLocaleChanged = null;
+    });
+  }
+
+  static Locale _executeParseLocale(String code) {
+    final List<String> parts = code.split('_');
+    if (parts.length == 2) {
+      return Locale(parts[0], parts[1]);
+    }
     return Locale(code);
   }
 
-  Future<void> executeSetLocale(String languageCode) async {
-    if (languageCode != 'ru' && languageCode != 'en') {
-      return;
+  static String _executeFormatLocale(Locale locale) {
+    final String? country = locale.countryCode;
+    if (country == null) {
+      return locale.languageCode;
     }
-    await getIt<SharedPreferences>().setString(kAppLocaleKey, languageCode);
-    state = Locale(languageCode);
+    return '${locale.languageCode}_$country';
   }
 }
 
@@ -30,11 +67,20 @@ final NotifierProvider<LocaleController, Locale> localeControllerProvider =
     NotifierProvider<LocaleController, Locale>(LocaleController.new);
 
 /// Смена языка и перепланирование напоминания с новым текстом.
-Future<void> executeApplyLocale(WidgetRef ref, String languageCode) async {
-  await ref.read(localeControllerProvider.notifier).executeSetLocale(
-    languageCode,
+/// [locale] == null — вернуться к языку телефона.
+Future<void> executeApplyLocale(WidgetRef ref, Locale? locale) async {
+  final LocaleController controller = ref.read(
+    localeControllerProvider.notifier,
   );
-  final CycleSettings settings = ref.read(calendarControllerProvider).data.settings;
+  if (locale == null) {
+    await controller.executeUseSystemLocale();
+  } else {
+    await controller.executeSetLocale(locale);
+  }
+  final CycleSettings settings = ref
+      .read(calendarControllerProvider)
+      .data
+      .settings;
   await ref
       .read(calendarControllerProvider.notifier)
       .executeUpdateSettings(settings);

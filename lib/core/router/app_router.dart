@@ -157,7 +157,9 @@ final Provider<GoRouter> goRouterProvider = Provider<GoRouter>((Ref ref) {
             if (extra is! PaymentSession) {
               return Scaffold(
                 body: Center(
-                  child: Text(AppLocalizations.of(context).paymentSessionNotFound),
+                  child: Text(
+                    AppLocalizations.of(context).paymentSessionNotFound,
+                  ),
                 ),
               );
             }

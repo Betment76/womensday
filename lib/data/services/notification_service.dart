@@ -5,8 +5,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:womensday/core/constants/app_constants.dart';
 import 'package:womensday/l10n/app_localizations.dart';
-import 'package:womensday/presentation/controllers/locale_controller.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
+import 'package:womensday/core/utils/service_localizations.dart';
 import 'package:womensday/domain/services/reminder_scheduler.dart';
 
 /// Напоминание за день до прогнозируемых месячных.
@@ -64,7 +64,9 @@ class NotificationService implements ReminderScheduler {
     if (!scheduled.isAfter(tz.TZDateTime.now(tz.local))) {
       return;
     }
-    final AppLocalizations strings = _executeResolveStrings();
+    final AppLocalizations strings = executeResolveLocalizedStrings(
+      _preferences,
+    );
     await _plugin.zonedSchedule(
       1,
       strings.appName,
@@ -81,15 +83,6 @@ class NotificationService implements ReminderScheduler {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
-  }
-
-  AppLocalizations _executeResolveStrings() {
-    final String code =
-        _preferences?.getString(kAppLocaleKey) ?? 'ru';
-    if (code == 'en') {
-      return AppLocalizationsEn();
-    }
-    return AppLocalizationsRu();
   }
 
   Future<void> executeRequestPermission() async {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:womensday/core/constants/rustore_config.dart';
 import 'package:womensday/core/constants/tbank_config.dart';
 import 'package:womensday/core/di/injection.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
@@ -32,8 +33,8 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
     if (_isOpening) {
       return;
     }
-    final PremiumConsentResult? consent = await PremiumConsentDialog
-        .executeShow(context);
+    final PremiumConsentResult? consent =
+        await PremiumConsentDialog.executeShow(context);
     if (consent == null || !mounted) {
       return;
     }
@@ -90,9 +91,9 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.premiumOpenPaymentFailed)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.premiumOpenPaymentFailed)));
     } finally {
       if (mounted) {
         setState(() => _isOpening = false);
@@ -119,9 +120,9 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
         if (!mounted) {
           return;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.premiumRustoreUnavailable)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.premiumRustoreUnavailable)));
         return;
       }
       final bool success = await rustore.executePurchase();
@@ -139,9 +140,16 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
             },
           ),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.premiumActivatedAdsOff)),
+        unawaited(
+          getIt<AppMetricaService>().executeReportRevenue(
+            amountRubles: TBankConfig.premiumAmountRubles.round(),
+            productId: RuStoreConfig.premiumProductId,
+            payload: const <String, Object?>{'method': 'rustore'},
+          ),
         );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.premiumActivatedAdsOff)));
       } else {
         unawaited(
           getIt<AppMetricaService>().executeReportEvent(
@@ -153,9 +161,9 @@ class _PremiumPurchaseButtonState extends ConsumerState<PremiumPurchaseButton> {
             },
           ),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.premiumPurchaseFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.premiumPurchaseFailed)));
       }
     } finally {
       if (mounted) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,26 +34,25 @@ Future<void> executeDependencyInjection() async {
   final NotificationService notificationService = NotificationService(
     preferences: preferences,
   );
-  try {
-    await notificationService.executeInitialize();
-  } catch (_) {
-    // Напоминания недоступны на текущей платформе — календарь работает без них.
-  }
   getIt.registerSingleton<SharedPreferences>(preferences);
   getIt.registerSingleton<NotificationService>(notificationService);
   getIt.registerSingleton<ReminderScheduler>(notificationService);
+  // Напоминания недоступны на текущей платформе — календарь работает без них.
+  unawaited(executeInitIgnoringErrors(notificationService.executeInitialize()));
   final AppMetricaService appMetricaService = AppMetricaService();
-  await appMetricaService.executeInitialize();
   getIt.registerSingleton<AppMetricaService>(appMetricaService);
+  unawaited(appMetricaService.executeInitialize());
   if (DistributionConfig.ruStoreSdkEnabled) {
-    final RustoreReviewService rustoreReviewService = RustoreReviewService();
-    await rustoreReviewService.executeInitialize();
+    final RustoreReviewService rustoreReviewService = RustoreReviewService(
+      preferences: preferences,
+    );
     getIt.registerSingleton<RustoreReviewService>(rustoreReviewService);
     getIt.registerSingleton<RustoreUpdateService>(RustoreUpdateService());
+    unawaited(rustoreReviewService.executeInitialize());
   }
   final YandexAdsService yandexAdsService = YandexAdsService(preferences);
-  await yandexAdsService.executeInitialize();
   getIt.registerSingleton<YandexAdsService>(yandexAdsService);
+  unawaited(yandexAdsService.executeInitialize());
   TBankPaymentService? tbankPayments;
   RustorePayService? rustorePay;
   if (DistributionConfig.paymentsEnabled) {
@@ -59,8 +60,8 @@ Future<void> executeDependencyInjection() async {
     tbankPayments = TBankPaymentService(client: tbankClient);
     getIt.registerSingleton<TBankPaymentService>(tbankPayments);
     rustorePay = RustorePayService(ads: yandexAdsService);
-    await rustorePay.executeInitialize();
     getIt.registerSingleton<RustorePayService>(rustorePay);
+    unawaited(rustorePay.executeInitialize());
   }
   getIt.registerSingleton<PremiumEntitlementService>(
     PremiumEntitlementService(
@@ -83,6 +84,15 @@ Future<void> executeDependencyInjection() async {
   );
 
   getIt.registerSingleton<CalendarBootstrap>(await executeLoadBootstrap());
+}
+
+/// Нефатальная инициализация: ошибка не должна мешать старту приложения.
+Future<void> executeInitIgnoringErrors(Future<void> init) async {
+  try {
+    await init;
+  } catch (_) {
+    // Сервис продолжает работать без инициализации.
+  }
 }
 
 Future<CalendarBootstrap> executeLoadBootstrap() async {

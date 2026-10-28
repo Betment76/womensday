@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:womensday/core/constants/app_constants.dart';
+import 'package:womensday/core/constants/app_language_names.dart';
 import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 import 'package:womensday/domain/entities/cycle_settings.dart';
@@ -17,6 +18,20 @@ import 'package:womensday/presentation/widgets/section_card.dart';
 /// Настройки цикла, напоминаний и сброс данных.
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
+
+  Future<void> _executePickLocale(BuildContext context, WidgetRef ref) async {
+    final LocalePickResult? picked = await AppLanguageNames.executeShowPicker(
+      context,
+      ref.read(localeControllerProvider),
+    );
+    if (picked == null) {
+      return;
+    }
+    await executeApplyLocale(
+      ref,
+      picked is PickedLocale ? picked.locale : null,
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,10 +75,7 @@ class SettingsPage extends ConsumerWidget {
                   min: AppConstants.minPeriodDuration,
                   max: AppConstants.maxPeriodDuration,
                   onChanged: (int value) {
-                    executeSave(
-                      ref,
-                      settings.copyWith(periodDuration: value),
-                    );
+                    executeSave(ref, settings.copyWith(periodDuration: value));
                   },
                 ),
               ],
@@ -119,25 +131,35 @@ class SettingsPage extends ConsumerWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
-                  SegmentedButton<String>(
-                    segments: const <ButtonSegment<String>>[
-                      ButtonSegment<String>(value: 'ru', label: Text('RU')),
-                      ButtonSegment<String>(value: 'en', label: Text('EN')),
-                    ],
-                    selected: <String>{locale.languageCode},
-                    onSelectionChanged: (Set<String> selection) {
-                      unawaited(
-                        executeApplyLocale(ref, selection.first),
-                      );
-                    },
-                    style: ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 8),
+                  if (DistributionConfig.isGooglePlay)
+                    TextButton(
+                      onPressed: () =>
+                          unawaited(_executePickLocale(context, ref)),
+                      child: Text(
+                        AppLanguageNames.nativeName(locale),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    )
+                  else
+                    SegmentedButton<String>(
+                      segments: const <ButtonSegment<String>>[
+                        ButtonSegment<String>(value: 'ru', label: Text('RU')),
+                        ButtonSegment<String>(value: 'en', label: Text('EN')),
+                      ],
+                      selected: <String>{locale.languageCode},
+                      onSelectionChanged: (Set<String> selection) {
+                        unawaited(
+                          executeApplyLocale(ref, Locale(selection.first)),
+                        );
+                      },
+                      style: ButtonStyle(
+                        visualDensity: VisualDensity.compact,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(horizontal: 8),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

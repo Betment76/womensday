@@ -121,10 +121,14 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
   Future<void> _closeBankBrowser() async {
     try {
       await cct.closeCustomTabs();
-    } catch (_) {}
+    } catch (_) {
+      // Custom Tabs могли быть уже закрыты пользователем.
+    }
     try {
       await closeInAppWebView();
-    } catch (_) {}
+    } catch (_) {
+      // Внутренний браузер не открывался — закрывать нечего.
+    }
   }
 
   Future<void> _openPaymentUrl() async {
@@ -150,7 +154,8 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
       }
       if (!launched) {
         setState(
-          () => _statusText = AppLocalizations.of(context).paymentOpenFormFailed,
+          () =>
+              _statusText = AppLocalizations.of(context).paymentOpenFormFailed,
         );
         return;
       }
@@ -190,6 +195,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
         await _finish(paid: false);
       }
     } catch (_) {
+      // Разовый сбой опроса статуса не критичен — повторится по таймеру.
     } finally {
       _isVerifying = false;
     }
@@ -211,6 +217,18 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
         },
       ),
     );
+    if (paid) {
+      unawaited(
+        getIt<AppMetricaService>().executeReportRevenue(
+          amountRubles: widget.session.amountRubles.round(),
+          productId: 'premium_sbp',
+          payload: <String, Object?>{
+            'method': 'sbp',
+            'order_id': widget.session.orderId,
+          },
+        ),
+      );
+    }
     if (paid && mounted) {
       await ProviderScope.containerOf(context)
           .read(premiumControllerProvider.notifier)
@@ -339,10 +357,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         const SizedBox(height: 12),
-        Text(
-          l10n.paymentFailedBody,
-          textAlign: TextAlign.center,
-        ),
+        Text(l10n.paymentFailedBody, textAlign: TextAlign.center),
         const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
@@ -365,10 +380,7 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         const SizedBox(height: 16),
-        Text(
-          l10n.paymentSaveOrderHint,
-          textAlign: TextAlign.center,
-        ),
+        Text(l10n.paymentSaveOrderHint, textAlign: TextAlign.center),
         const SizedBox(height: 12),
         _buildOrderIdBlock(l10n),
       ],

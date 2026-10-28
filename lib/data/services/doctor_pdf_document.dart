@@ -14,31 +14,22 @@ import 'package:womensday/domain/entities/period_cycle.dart';
 
 import 'package:womensday/l10n/app_localizations.dart';
 
-
-
 /// Вёрстка PDF-отчёта для врача.
 
 class DoctorPdfDocument {
-
   DoctorPdfDocument({
-
     required this.regular,
 
     required this.bold,
 
     required this.strings,
-
   });
-
-
 
   final pw.Font regular;
 
   final pw.Font bold;
 
   final AppLocalizations strings;
-
-
 
   static const PdfColor _branch = PdfColor.fromInt(0xFF5D4037);
 
@@ -47,27 +38,18 @@ class DoctorPdfDocument {
   static const PdfColor _headerFill = PdfColor.fromInt(0xFFFFD6E3);
 
   static const pw.EdgeInsets _tableCellPadding = pw.EdgeInsets.symmetric(
-
     horizontal: 4,
 
     vertical: 4,
-
   );
 
-
-
   Future<List<int>> executeBuild(CycleReport report) {
-
     final pw.Document document = pw.Document(
-
       theme: pw.ThemeData.withFont(base: regular, bold: bold),
-
     );
 
     document.addPage(
-
       pw.MultiPage(
-
         pageFormat: PdfPageFormat.a4,
 
         margin: const pw.EdgeInsets.fromLTRB(36, 36, 36, 40),
@@ -77,9 +59,7 @@ class DoctorPdfDocument {
         footer: executeFooter,
 
         build: (pw.Context context) {
-
           return <pw.Widget>[
-
             executeTitle(report),
 
             pw.SizedBox(height: 10),
@@ -105,77 +85,49 @@ class DoctorPdfDocument {
             pw.SizedBox(height: 8),
 
             executeLogsTable(report),
-
           ];
-
         },
-
       ),
-
     );
 
     return document.save();
-
   }
 
-
-
   String executeFlowWords(FlowIntensity? flow) {
-
     if (flow == null) {
-
       return '-';
-
     }
 
     return strings.flowTitle(flow);
-
   }
 
-
-
   pw.Widget executeTitle(CycleReport report) {
-
     return pw.Column(
-
       crossAxisAlignment: pw.CrossAxisAlignment.start,
 
       children: [
-
         pw.Text(
-
           strings.appName,
 
           style: pw.TextStyle(font: bold, fontSize: 18, color: _sakura),
-
         ),
 
         pw.SizedBox(height: 4),
 
         pw.Text(
-
           strings.pdfDoctorExportSubtitle(report.generatedAt.storageKey),
 
           style: pw.TextStyle(font: regular, fontSize: 11, color: _branch),
-
         ),
-
       ],
-
     );
-
   }
 
-
-
   pw.Widget executeDisclaimer() {
-
     return pw.Text(
-
       strings.pdfDisclaimer,
 
       style: pw.TextStyle(
-
         font: regular,
 
         fontSize: 9,
@@ -183,141 +135,91 @@ class DoctorPdfDocument {
         color: _branch,
 
         lineSpacing: 2,
-
       ),
-
     );
-
   }
 
-
-
   pw.Widget executeSummary(CycleReport report) {
-
     return pw.Row(
-
       children: [
-
         executeSummaryTile(
-
           strings.statsCycleLength,
 
           '${report.averageCycleLength} ${strings.pluralDays(report.averageCycleLength)}',
-
         ),
 
         pw.SizedBox(width: 12),
 
         executeSummaryTile(
-
           strings.statsPeriodDuration,
 
           '${report.averagePeriodDuration} ${strings.pluralDays(report.averagePeriodDuration)}',
-
         ),
 
         pw.SizedBox(width: 12),
 
         executeSummaryTile(
-
           strings.pdfSummaryRegularity,
 
           strings.regularityTitle(report.regularity),
-
         ),
-
       ],
-
     );
-
   }
 
-
-
   pw.Widget executeSummaryTile(String label, String value) {
-
     return pw.Expanded(
-
       child: pw.Container(
-
         padding: const pw.EdgeInsets.all(8),
 
         decoration: pw.BoxDecoration(
-
           border: pw.Border.all(color: _headerFill),
 
           borderRadius: pw.BorderRadius.circular(6),
-
         ),
 
         child: pw.Column(
-
           crossAxisAlignment: pw.CrossAxisAlignment.start,
 
           children: [
-
             pw.Text(
-
               label,
 
               style: pw.TextStyle(font: regular, fontSize: 8, color: _branch),
-
             ),
 
             pw.SizedBox(height: 4),
 
             pw.Text(
-
               value,
 
               style: pw.TextStyle(font: bold, fontSize: 11, color: _branch),
-
             ),
-
           ],
-
         ),
-
       ),
-
     );
-
   }
 
-
-
   pw.Widget executeSectionTitle(String title) {
-
     return pw.Text(
-
       title,
 
       style: pw.TextStyle(font: bold, fontSize: 13, color: _branch),
-
     );
-
   }
 
-
-
   pw.Widget executeCyclesTable(CycleReport report) {
-
     if (report.cycles.isEmpty) {
-
       return pw.Text(
-
         strings.pdfCyclesEmpty,
 
         style: pw.TextStyle(font: regular, fontSize: 10, color: _branch),
-
       );
-
     }
 
     return executeTable(
-
       headers: <String>[
-
         strings.pdfColStart,
 
         strings.pdfColEnd,
@@ -325,15 +227,11 @@ class DoctorPdfDocument {
         strings.pdfColPeriodDays,
 
         strings.pdfColCycleLength,
-
       ],
 
       rows: report.cycles.reversed
-
           .map(
-
             (PeriodCycle cycle) => <String>[
-
               cycle.start.storageKey,
 
               cycle.end.storageKey,
@@ -341,39 +239,24 @@ class DoctorPdfDocument {
               '${cycle.duration} ${strings.pluralDays(cycle.duration)}',
 
               cycle.lengthToNext == null
-
                   ? strings.pdfCurrentCycleShort
-
                   : '${cycle.lengthToNext} ${strings.pluralDays(cycle.lengthToNext!)}',
-
             ],
-
           )
-
           .toList(),
-
     );
-
   }
 
-
-
   pw.Widget executeLogsTable(CycleReport report) {
-
     if (report.logs.isEmpty) {
-
       return pw.Text(
-
         strings.pdfDiaryEmpty,
 
         style: pw.TextStyle(font: regular, fontSize: 10, color: _branch),
-
       );
-
     }
 
     final List<String> headers = <String>[
-
       strings.pdfColDate,
 
       strings.pdfColPeriodDays,
@@ -385,17 +268,14 @@ class DoctorPdfDocument {
       strings.wellbeing,
 
       strings.pdfColNote,
-
     ];
 
     final pw.TextStyle headerStyle = pw.TextStyle(
-
       font: bold,
 
       fontSize: 8,
 
       color: _branch,
-
     );
 
     final String flowLight = strings.flowTitle(FlowIntensity.light);
@@ -405,7 +285,6 @@ class DoctorPdfDocument {
     final String flowHeavy = strings.flowTitle(FlowIntensity.heavy);
 
     return executeTable(
-
       headers: headers,
 
       rows: report.logs.map(executeLogRow).toList(),
@@ -413,61 +292,43 @@ class DoctorPdfDocument {
       headerStyle: headerStyle,
 
       columnWidths: <int, pw.TableColumnWidth>{
-
         0: _GuideColumnWidth(
-
           guides: <String>[strings.pdfColDate, '0000-00-00'],
 
           style: headerStyle,
-
         ),
 
         1: _GuideColumnWidth(
-
           guides: <String>[strings.pdfColPeriodDays],
 
           style: headerStyle,
-
         ),
 
         2: _GuideColumnWidth(
-
           guides: <String>[strings.flow, flowLight, flowMedium, flowHeavy],
 
           style: headerStyle,
-
         ),
 
         3: _GuideColumnWidth(
-
           guides: <String>[strings.mood],
 
           style: headerStyle,
-
         ),
 
         4: _GuideColumnWidth(
-
           guides: <String>[strings.wellbeing],
 
           style: headerStyle,
-
         ),
 
         5: const pw.FlexColumnWidth(),
-
       },
-
     );
-
   }
 
-
-
   List<String> executeLogRow(DayLog log) {
-
     return <String>[
-
       log.date.storageKey,
 
       log.isPeriod ? strings.pdfYes : strings.pdfNo,
@@ -477,21 +338,14 @@ class DoctorPdfDocument {
       log.mood == null ? '-' : strings.moodTitle(log.mood!),
 
       log.symptoms.isEmpty
-
           ? '-'
-
           : log.symptoms.map(strings.symptomTitle).join(', '),
 
       log.note.trim().isEmpty ? '-' : log.note.trim(),
-
     ];
-
   }
 
-
-
   pw.Widget executeTable({
-
     required List<String> headers,
 
     required List<List<String>> rows,
@@ -499,17 +353,13 @@ class DoctorPdfDocument {
     pw.TextStyle? headerStyle,
 
     Map<int, pw.TableColumnWidth>? columnWidths,
-
   }) {
-
     return pw.TableHelper.fromTextArray(
-
       headers: headers,
 
       data: rows,
 
       headerStyle:
-
           headerStyle ?? pw.TextStyle(font: bold, fontSize: 8, color: _branch),
 
       cellStyle: pw.TextStyle(font: regular, fontSize: 8, color: _branch),
@@ -525,86 +375,54 @@ class DoctorPdfDocument {
       columnWidths: columnWidths,
 
       border: pw.TableBorder.all(color: _headerFill, width: 0.6),
-
     );
-
   }
 
-
-
   pw.Widget executeHeader(pw.Context context) {
-
     if (context.pageNumber == 1) {
-
       return pw.SizedBox();
-
     }
 
     return pw.Padding(
-
       padding: const pw.EdgeInsets.only(bottom: 10),
 
       child: pw.Row(
-
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
 
         children: [
-
           pw.Text(
-
             strings.appName,
 
             style: pw.TextStyle(font: bold, fontSize: 9, color: _sakura),
-
           ),
 
           pw.Text(
-
             strings.pdfDiaryContinuation,
 
             style: pw.TextStyle(font: regular, fontSize: 8, color: _branch),
-
           ),
-
         ],
-
       ),
-
     );
-
   }
 
-
-
   pw.Widget executeFooter(pw.Context context) {
-
     return pw.Align(
-
       alignment: pw.Alignment.centerRight,
 
       child: pw.Text(
-
         strings.pdfPageFooter(context.pageNumber, context.pagesCount),
 
         style: pw.TextStyle(font: regular, fontSize: 8, color: _branch),
-
       ),
-
     );
-
   }
-
 }
-
-
 
 /// Ширина колонки по самому длинному заголовку-ориентиру, без растягивания от ячеек.
 
 class _GuideColumnWidth extends pw.TableColumnWidth {
-
   _GuideColumnWidth({required this.guides, required this.style});
-
-
 
   final List<String> guides;
 
@@ -612,42 +430,29 @@ class _GuideColumnWidth extends pw.TableColumnWidth {
 
   double? _width;
 
-
-
   @override
-
   pw.ColumnLayout layout(
-
     pw.Widget child,
 
     pw.Context context,
 
     pw.BoxConstraints constraints,
-
   ) {
-
     final double width = _width ?? executeMeasure(context);
 
     _width = width;
 
     return pw.ColumnLayout(width, 0);
-
   }
 
-
-
   double executeMeasure(pw.Context context) {
-
     double maxWidth = 0;
 
     for (final String guide in guides) {
-
       final pw.Widget probe = pw.Padding(
-
         padding: DoctorPdfDocument._tableCellPadding,
 
         child: pw.Text(guide, style: style, softWrap: false, maxLines: 1),
-
       );
 
       probe.layout(context, const pw.BoxConstraints());
@@ -655,17 +460,10 @@ class _GuideColumnWidth extends pw.TableColumnWidth {
       final double width = probe.box!.width;
 
       if (width > maxWidth) {
-
         maxWidth = width;
-
       }
-
     }
 
     return maxWidth + 1;
-
   }
-
 }
-
-

@@ -10,7 +10,7 @@ class NumberStepper extends StatelessWidget {
     required this.min,
     required this.max,
     required this.onChanged,
-    this.unit = 'дней',
+    required this.unit,
     this.compact = false,
   });
   final String label;
@@ -28,9 +28,9 @@ class NumberStepper extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _RoundButton(

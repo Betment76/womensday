@@ -9,8 +9,8 @@ import 'package:womensday/core/extensions/date_time_extension.dart';
 import 'package:womensday/data/services/doctor_pdf_document.dart';
 import 'package:womensday/domain/entities/cycle_report.dart';
 import 'package:womensday/domain/services/doctor_report_exporter.dart';
+import 'package:womensday/core/utils/service_localizations.dart';
 import 'package:womensday/l10n/app_localizations.dart';
-import 'package:womensday/presentation/controllers/locale_controller.dart';
 
 /// Сборка PDF и системный лист «Поделиться».
 class DoctorPdfService implements DoctorReportExporter {
@@ -22,7 +22,9 @@ class DoctorPdfService implements DoctorReportExporter {
 
   @override
   Future<void> executeShare(CycleReport report) async {
-    final AppLocalizations strings = _executeResolveStrings();
+    final AppLocalizations strings = executeResolveLocalizedStrings(
+      _preferences,
+    );
     final Directory directory = await getTemporaryDirectory();
     final File file = File(
       '${directory.path}/zhenskiy_kalendar_${report.generatedAt.storageKey}.pdf',
@@ -47,21 +49,17 @@ class DoctorPdfService implements DoctorReportExporter {
       }
       await Future<void>.delayed(const Duration(seconds: 2));
     } finally {
+      // Шрифты (~1.1 МБ) не держим в heap между экспортами.
+      _regularFont = null;
+      _boldFont = null;
       try {
         if (await file.exists()) {
           await file.delete();
         }
-      } catch (_) {}
+      } catch (_) {
+        // Временный файл мог быть удалён системой — это не ошибка экспорта.
+      }
     }
-  }
-
-  AppLocalizations _executeResolveStrings() {
-    final String code =
-        _preferences?.getString(kAppLocaleKey) ?? 'ru';
-    if (code == 'en') {
-      return AppLocalizationsEn();
-    }
-    return AppLocalizationsRu();
   }
 
   Future<void> executeLoadFonts() async {
@@ -69,4 +67,3 @@ class DoctorPdfService implements DoctorReportExporter {
     _boldFont ??= await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
   }
 }
-

@@ -41,10 +41,7 @@ class SplashPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: onRetry,
-                    child: Text(l10n.retry),
-                  ),
+                  FilledButton(onPressed: onRetry, child: Text(l10n.retry)),
                 ],
               ],
             ),

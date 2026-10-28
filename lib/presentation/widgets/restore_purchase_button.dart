@@ -77,10 +77,7 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
                         ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    l10n.premiumRestoreBody,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(l10n.premiumRestoreBody, textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   TextField(
                     controller: controller,
@@ -134,9 +131,9 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
       return;
     }
     if (orderId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.premiumEnterOrderId)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.premiumEnterOrderId)));
       return;
     }
     setState(() => _isRestoring = true);
@@ -158,9 +155,9 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.premiumRestoreCheckFailed)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.premiumRestoreCheckFailed)));
     } finally {
       if (mounted) {
         setState(() => _isRestoring = false);
@@ -191,9 +188,9 @@ class _RestorePurchaseButtonState extends ConsumerState<RestorePurchaseButton> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.premiumRestoreRustoreFailed)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.premiumRestoreRustoreFailed)));
     } finally {
       if (mounted) {
         setState(() => _isRestoring = false);

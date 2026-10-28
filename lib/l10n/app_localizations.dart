@@ -1,20 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:womensday/core/constants/calendar_message_codes.dart';
+import 'package:womensday/core/constants/distribution_config.dart';
 import 'package:womensday/domain/entities/cycle_phase.dart';
 import 'package:womensday/domain/entities/cycle_regularity.dart';
 import 'package:womensday/domain/entities/flow_intensity.dart';
 import 'package:womensday/domain/entities/mood.dart';
 import 'package:womensday/domain/entities/symptom.dart';
+import 'package:womensday/l10n/locales/app_localizations_ar.dart';
+import 'package:womensday/l10n/locales/app_localizations_cs.dart';
+import 'package:womensday/l10n/locales/app_localizations_de.dart';
+import 'package:womensday/l10n/locales/app_localizations_el.dart';
+import 'package:womensday/l10n/locales/app_localizations_es.dart';
+import 'package:womensday/l10n/locales/app_localizations_es_419.dart';
+import 'package:womensday/l10n/locales/app_localizations_fr.dart';
+import 'package:womensday/l10n/locales/app_localizations_hi.dart';
+import 'package:womensday/l10n/locales/app_localizations_hu.dart';
+import 'package:womensday/l10n/locales/app_localizations_id.dart';
+import 'package:womensday/l10n/locales/app_localizations_it.dart';
+import 'package:womensday/l10n/locales/app_localizations_ja.dart';
+import 'package:womensday/l10n/locales/app_localizations_ko.dart';
+import 'package:womensday/l10n/locales/app_localizations_nl.dart';
+import 'package:womensday/l10n/locales/app_localizations_pl.dart';
+import 'package:womensday/l10n/locales/app_localizations_pt.dart';
+import 'package:womensday/l10n/locales/app_localizations_ro.dart';
+import 'package:womensday/l10n/locales/app_localizations_th.dart';
+import 'package:womensday/l10n/locales/app_localizations_tr.dart';
+import 'package:womensday/l10n/locales/app_localizations_uk.dart';
+import 'package:womensday/l10n/locales/app_localizations_vi.dart';
+import 'package:womensday/l10n/locales/app_localizations_zh_tw.dart';
 
-/// Строки интерфейса (ru / en).
+/// Строки интерфейса: rustore — ru/en, googleplay — 24 языка листинга.
 abstract class AppLocalizations {
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 
-  static const List<Locale> supportedLocales = <Locale>[
+  static const List<Locale> _rustoreLocales = <Locale>[
     Locale('ru'),
     Locale('en'),
   ];
+
+  /// 24 языка Google Play-листинга (docs/aso-play-import.txt).
+  static const List<Locale> _googlePlayLocales = <Locale>[
+    Locale('en'),
+    Locale('ru'),
+    Locale('de'),
+    Locale('es'),
+    Locale('pt', 'BR'),
+    Locale('fr'),
+    Locale('it'),
+    Locale('tr'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('pl'),
+    Locale('nl'),
+    Locale('uk'),
+    Locale('id'),
+    Locale('hi'),
+    Locale('vi'),
+    Locale('th'),
+    Locale('ar'),
+    Locale('zh', 'TW'),
+    Locale('cs'),
+    Locale('ro'),
+    Locale('hu'),
+    Locale('el'),
+    Locale('es', '419'),
+  ];
+
+  static List<Locale> get supportedLocales =>
+      DistributionConfig.isGooglePlay ? _googlePlayLocales : _rustoreLocales;
 
   static AppLocalizations of(BuildContext context) {
     final AppLocalizations? value = Localizations.of<AppLocalizations>(
@@ -27,10 +81,66 @@ abstract class AppLocalizations {
 
   /// Строки без [BuildContext] (уведомления, snackbar до дерева).
   static AppLocalizations lookup(Locale locale) {
+    if (DistributionConfig.isGooglePlay) {
+      return _executeLookupGooglePlay(locale);
+    }
     if (locale.languageCode == 'en') {
       return AppLocalizationsEn();
     }
     return AppLocalizationsRu();
+  }
+
+  static AppLocalizations _executeLookupGooglePlay(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ru':
+        return AppLocalizationsRu();
+      case 'de':
+        return AppLocalizationsDe();
+      case 'es':
+        return locale.countryCode == '419'
+            ? AppLocalizationsEs419()
+            : AppLocalizationsEs();
+      case 'pt':
+        return AppLocalizationsPtBr();
+      case 'fr':
+        return AppLocalizationsFr();
+      case 'it':
+        return AppLocalizationsIt();
+      case 'tr':
+        return AppLocalizationsTr();
+      case 'ja':
+        return AppLocalizationsJa();
+      case 'ko':
+        return AppLocalizationsKo();
+      case 'pl':
+        return AppLocalizationsPl();
+      case 'nl':
+        return AppLocalizationsNl();
+      case 'uk':
+        return AppLocalizationsUk();
+      case 'id':
+        return AppLocalizationsId();
+      case 'hi':
+        return AppLocalizationsHi();
+      case 'vi':
+        return AppLocalizationsVi();
+      case 'th':
+        return AppLocalizationsTh();
+      case 'ar':
+        return AppLocalizationsAr();
+      case 'zh':
+        return AppLocalizationsZhTw();
+      case 'cs':
+        return AppLocalizationsCs();
+      case 'ro':
+        return AppLocalizationsRo();
+      case 'hu':
+        return AppLocalizationsHu();
+      case 'el':
+        return AppLocalizationsEl();
+      default:
+        return AppLocalizationsEn();
+    }
   }
 
   String get languageCode;
@@ -54,6 +164,10 @@ abstract class AppLocalizations {
   String get resetDialogTitle;
   String get resetDialogBody;
   String get cancel;
+  String get writeToDeveloper;
+  String get addressCopied;
+  String get emailFieldLabel;
+  String get emailFieldHint;
   String get resetConfirm;
   String get loadCalendarError;
   String get persistError;
@@ -106,7 +220,7 @@ abstract class AppLocalizations {
   String get aboutPhasesBody2;
   String get aboutPhasesBody3;
   String get legalSectionTitle;
-  String get legalSectionSubtitle;
+  String get allMoiSoftApps;
   String get privacyPolicyTitle;
   String get userAgreementTitle;
   String get publicOfferTitle;
@@ -250,6 +364,18 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cancel => 'Отмена';
+
+  @override
+  String get writeToDeveloper => 'Написать разработчику';
+
+  @override
+  String get addressCopied => 'Адрес скопирован';
+
+  @override
+  String get emailFieldLabel => 'Email';
+
+  @override
+  String get emailFieldHint => 'name@mail.ru';
 
   @override
   String get resetConfirm => 'Сбросить';
@@ -478,7 +604,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get legalSectionTitle => 'Юридические документы';
 
   @override
-  String get legalSectionSubtitle => 'ФЗ-152, политика, соглашение и оферта';
+  String get allMoiSoftApps => 'Все приложения МойСофт';
 
   @override
   String get privacyPolicyTitle => 'Политика конфиденциальности';
@@ -775,6 +901,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get writeToDeveloper => 'Contact developer';
+
+  @override
+  String get addressCopied => 'Address copied';
+
+  @override
+  String get emailFieldLabel => 'Email';
+
+  @override
+  String get emailFieldHint => 'name@mail.ru';
+
+  @override
   String get resetConfirm => 'Reset';
 
   @override
@@ -827,8 +965,7 @@ class AppLocalizationsEn extends AppLocalizations {
       CyclePhase.fertile => 'Higher chance of conception.',
       CyclePhase.ovulation => 'Estimated ovulation day.',
       CyclePhase.luteal => 'Slow down and listen to your body.',
-      CyclePhase.late =>
-        'Cycle is longer than usual — log when period starts.',
+      CyclePhase.late => 'Cycle is longer than usual — log when period starts.',
     };
   }
 
@@ -925,8 +1062,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsRecentCycles => 'Recent cycles';
 
   @override
-  String get statsEmptyHistory =>
-      'Log your period — history will appear here.';
+  String get statsEmptyHistory => 'Log your period — history will appear here.';
 
   @override
   String get statsCurrentCycle => 'current cycle';
@@ -988,7 +1124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legalSectionTitle => 'Legal documents';
 
   @override
-  String get legalSectionSubtitle => 'Privacy, terms and public offer';
+  String get allMoiSoftApps => 'All MoiSoft apps';
 
   @override
   String get privacyPolicyTitle => 'Privacy policy';
@@ -1104,8 +1240,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'RuStore payments are unavailable. Install RuStore.';
 
   @override
-  String get premiumActivatedAdsOff =>
-      'Premium activated. Ads are disabled.';
+  String get premiumActivatedAdsOff => 'Premium activated. Ads are disabled.';
 
   @override
   String get premiumPurchaseFailed => 'Purchase failed. Try again later.';
@@ -1140,8 +1275,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumEnterOrderId => 'Enter order number';
 
   @override
-  String get premiumRestoreSuccess =>
-      'Purchase restored. Premium activated.';
+  String get premiumRestoreSuccess => 'Purchase restored. Premium activated.';
 
   @override
   String get premiumRestoreNotFound =>
@@ -1228,15 +1362,14 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) {
-    return locale.languageCode == 'ru' || locale.languageCode == 'en';
+    return AppLocalizations.supportedLocales.any(
+      (Locale supported) => supported.languageCode == locale.languageCode,
+    );
   }
 
   @override
   Future<AppLocalizations> load(Locale locale) async {
-    if (locale.languageCode == 'en') {
-      return AppLocalizationsEn();
-    }
-    return AppLocalizationsRu();
+    return AppLocalizations.lookup(locale);
   }
 
   @override

@@ -12,7 +12,6 @@ abstract final class TBankConfig {
       'https://pay.xn--i1afgbohn.xn--p1ai/fail.php?app=womensday.moysoft.rf';
   static const String paymentReturnScheme = 'womensday';
   static const double premiumAmountRubles = 299;
-  static const String premiumDescription = 'Премиум: отключение рекламы';
   static const Duration requestTimeout = Duration(seconds: 20);
   static const Duration statusPollInterval = Duration(seconds: 3);
   static const String adsRemovedKey = 'ads_payment_completed';

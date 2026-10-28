@@ -1,0 +1,27 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Плагины flutter_rustore_* есть в pubspec для rustore-флавора и в
+         googleplay попадают их классы (не инициализируются: DistributionConfig
+         gating). Убираем из merged-манифеста googleplay только компоненты SDK
+         RuStore — активити, провайдеры и сервис телеметрии не нужны этой сборке. -->
+    <application>
+        <activity
+            android:name="ru.rustore.sdk.pay.internal.presentation.ui.PayActivity"
+            tools:node="remove" />
+        <activity
+            android:name="ru.rustore.sdk.activitylauncher.RuStoreActivityLauncher"
+            tools:node="remove" />
+        <provider
+            android:name="ru.rustore.sdk.pay.RuStorePayContentProvider"
+            tools:node="remove" />
+        <provider
+            android:name="ru.rustore.sdk.imaging.ImageLoaderContentProvider"
+            tools:node="remove" />
+        <service
+            android:name="ru.rustore.sdk.metrics.internal.presentation.SendMetricsEventJobService"
+            tools:node="remove" />
+    </application>
+    <queries>
+        <package android:name="ru.rustore.payments.sandboxbank" tools:node="remove" />
+    </queries>
+</manifest>

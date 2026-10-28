@@ -27,7 +27,8 @@ class RustorePayService {
     }
     try {
       final PurchaseAvailabilityResult availability = await RuStorePayClient
-          .instance.purchaseInteractor
+          .instance
+          .purchaseInteractor
           .getPurchaseAvailability();
       if (availability is Available) {
         _isInitialized = true;
@@ -59,7 +60,8 @@ class RustorePayService {
         return false;
       }
       final PurchaseAvailabilityResult result = await RuStorePayClient
-          .instance.purchaseInteractor
+          .instance
+          .purchaseInteractor
           .getPurchaseAvailability();
       return result is Available;
     } catch (error) {
@@ -79,7 +81,8 @@ class RustorePayService {
     }
     try {
       final ProductPurchaseResult result = await RuStorePayClient
-          .instance.purchaseInteractor
+          .instance
+          .purchaseInteractor
           .purchase(RuStoreConfig.premiumProductId);
       final String purchaseId = result.purchaseId;
       if (purchaseId.isEmpty) {
@@ -109,7 +112,8 @@ class RustorePayService {
     }
     try {
       final List<Purchase> purchases = await RuStorePayClient
-          .instance.purchaseInteractor
+          .instance
+          .purchaseInteractor
           .getPurchases();
       for (final Purchase purchase in purchases) {
         if (purchase is ProductPurchase &&

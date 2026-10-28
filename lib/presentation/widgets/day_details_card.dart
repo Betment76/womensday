@@ -49,6 +49,9 @@ class DayDetailsCard extends ConsumerStatefulWidget {
 }
 
 class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
+  // Захватывается в initState: ref.read в dispose запрещён (элемент уже
+  // размонтируется), а флаш заметки должен сохранить несохранённый текст.
+  late final CalendarController _calendar;
   late final TextEditingController _noteController;
   late final FocusNode _noteFocusNode;
   final GlobalKey _noteKey = GlobalKey();
@@ -59,9 +62,8 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
   @override
   void initState() {
     super.initState();
-    final DayLog log = ref
-        .read(calendarControllerProvider.notifier)
-        .executeReadLog(widget.date);
+    _calendar = ref.read(calendarControllerProvider.notifier);
+    final DayLog log = _calendar.executeReadLog(widget.date);
     _savedLog = log;
     _noteController = TextEditingController(text: log.note);
     _noteFocusNode = FocusNode();
@@ -81,9 +83,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final String localeTag = ref.watch(localeControllerProvider).languageCode;
     ref.watch(calendarControllerProvider);
-    final DayLog log = ref
-        .read(calendarControllerProvider.notifier)
-        .executeReadLog(widget.date);
+    final DayLog log = _calendar.executeReadLog(widget.date);
     final double gap = widget.isCompact ? 8 : 12;
     if (widget.fillAvailableHeight && widget.showSaveButton) {
       return executeFillHeightLayout(l10n, log, gap);
@@ -100,10 +100,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
         SizedBox(height: gap),
       ],
       executePeriodCard(l10n, log),
-      if (log.isPeriod) ...[
-        SizedBox(height: gap),
-        executeFlowCard(l10n, log),
-      ],
+      if (log.isPeriod) ...[SizedBox(height: gap), executeFlowCard(l10n, log)],
       SizedBox(height: gap),
       SectionCard(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -252,9 +249,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
           ),
           CapsuleSwitch(
             value: log.isPeriod,
-            onChanged: (_) => ref
-                .read(calendarControllerProvider.notifier)
-                .executeTogglePeriod(widget.date),
+            onChanged: (_) => _calendar.executeTogglePeriod(widget.date),
           ),
         ],
       ),
@@ -266,10 +261,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
       child: Row(
         children: [
-          Text(
-            l10n.flow,
-            style: const TextStyle(fontWeight: FontWeight.w800),
-          ),
+          Text(l10n.flow, style: const TextStyle(fontWeight: FontWeight.w800)),
           const SizedBox(width: 8),
           Expanded(child: executeFlowButton(l10n, log, FlowIntensity.light)),
           const SizedBox(width: 6),
@@ -377,7 +369,9 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
         hintText: isExpanded || widget.noteMaxLines == 1
             ? l10n.noteHint
             : l10n.noteHintShort,
-        labelText: isExpanded || widget.noteMaxLines == 1 ? null : l10n.noteHint,
+        labelText: isExpanded || widget.noteMaxLines == 1
+            ? null
+            : l10n.noteHint,
         alignLabelWithHint: true,
         border: InputBorder.none,
         isDense: !isExpanded && widget.noteMaxLines == 1,
@@ -459,7 +453,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
     _noteDebounce?.cancel();
     executeFlushNote();
     final DayLog confirmed = executeCurrentMarks(
-      ref.read(calendarControllerProvider.notifier).executeReadLog(widget.date),
+      _calendar.executeReadLog(widget.date),
     );
     await getIt<YandexAdsService>().executeShowInterstitial();
     if (!mounted) {
@@ -509,9 +503,7 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
   }
 
   void executeFlushNote() {
-    final DayLog current = ref
-        .read(calendarControllerProvider.notifier)
-        .executeReadLog(widget.date);
+    final DayLog current = _calendar.executeReadLog(widget.date);
     if (current.note == _noteController.text) {
       return;
     }
@@ -519,6 +511,6 @@ class _DayDetailsCardState extends ConsumerState<DayDetailsCard> {
   }
 
   void executeSave(DayLog log) {
-    ref.read(calendarControllerProvider.notifier).executeSaveDayLog(log);
+    _calendar.executeSaveDayLog(log);
   }
 }

@@ -25,10 +25,10 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final String calendarLocale = ref.watch(localeControllerProvider).languageCode ==
-            'en'
-        ? 'en_US'
-        : 'ru_RU';
+    // Язык шапки TableCalendar (месяц, дни недели) — всегда текущая локаль.
+    final String calendarLocale = ref
+        .watch(localeControllerProvider)
+        .languageCode;
     final CycleForecast forecast = ref
         .watch(calendarControllerProvider)
         .forecast;

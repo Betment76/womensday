@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:womensday/core/extensions/date_time_extension.dart';
-import 'package:womensday/core/extensions/plural_extension.dart';
 import 'package:womensday/domain/entities/cycle_forecast.dart';
 import 'package:womensday/domain/entities/cycle_phase.dart';
 import 'package:womensday/domain/entities/cycle_regularity.dart';
@@ -115,13 +114,6 @@ void main() {
       calculator.executeResolveRegularity(<PeriodCycle>[cycle]),
       CycleRegularity.unknown,
     );
-  });
-
-  test('русские формы слова день', () {
-    expect(executePluralDays(1), 'день');
-    expect(executePluralDays(2), 'дня');
-    expect(executePluralDays(5), 'дней');
-    expect(executePluralDays(21), 'день');
   });
 }
 

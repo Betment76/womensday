@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:womensday/core/constants/app_links.dart';
 import 'package:womensday/core/theme/sakura_colors.dart';
 
-/// Кликабельный логотип МойСофт.
+/// Кликабельный логотип МойСофт: rustore — сайт, googleplay — каталог Google Play.
 class ClickableLogoWidget extends StatelessWidget {
   const ClickableLogoWidget({
     super.key,
     this.logoAsset = 'assets/icons/logoms1.png',
-    this.url = 'https://мойсофт.рф',
     this.height = 40,
     this.copyrightText = '© 2025–2026\nВсе права защищены',
   });
 
   final String logoAsset;
-  final String url;
   final double height;
   final String? copyrightText;
 
@@ -57,9 +56,11 @@ class ClickableLogoWidget extends StatelessWidget {
   }
 
   Future<void> executeOpenUrl() async {
-    final Uri uri = Uri.parse(url);
+    final Uri uri = Uri.parse(AppLinks.moiSoftApps);
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
+    } catch (_) {
+      // Браузер недоступен — молча игнорируем, логотип не критичен.
+    }
   }
 }

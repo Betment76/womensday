@@ -7,6 +7,7 @@
 .atom/
 .build/
 .buildlog/
+android/build/
 .history
 .svn/
 .swiftpm/
@@ -51,5 +52,5 @@ android/key.properties
 pepk.jar
 /rustore/
 
-# Dart-define файлы сборки (DISTRIBUTION, ключ AppMetrica) — не в репозиторий
+# Dart-define файлы сборки (DISTRIBUTION) — не в репозиторий
 /config/

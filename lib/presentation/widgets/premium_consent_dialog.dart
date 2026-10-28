@@ -10,10 +10,7 @@ enum PremiumPaymentMethod { sbp, rustore }
 
 /// Результат шторки согласия: выбранный способ и email для чека.
 class PremiumConsentResult {
-  const PremiumConsentResult({
-    required this.method,
-    required this.email,
-  });
+  const PremiumConsentResult({required this.method, required this.email});
 
   final PremiumPaymentMethod method;
   final String email;
@@ -116,19 +113,16 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              l10n.premiumAfterPaymentHint,
-              textAlign: TextAlign.center,
-            ),
+            Text(l10n.premiumAfterPaymentHint, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               autofillHints: const <String>[AutofillHints.email],
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'name@mail.ru',
+              decoration: InputDecoration(
+                labelText: l10n.emailFieldLabel,
+                hintText: l10n.emailFieldHint,
               ),
             ),
             const SizedBox(height: 16),
@@ -168,9 +162,9 @@ class _PremiumConsentDialogState extends State<PremiumConsentDialog> {
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF0A66C0),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF0A66C0).withValues(
-                  alpha: 0.38,
-                ),
+                disabledBackgroundColor: const Color(
+                  0xFF0A66C0,
+                ).withValues(alpha: 0.38),
                 disabledForegroundColor: Colors.white.withValues(alpha: 0.38),
               ),
               icon: const Icon(Icons.store_outlined),

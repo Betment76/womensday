@@ -2,8 +2,6 @@ import 'package:flutter/animation.dart';
 
 /// Константы приложения «Мой женский календарь».
 class AppConstants {
-  static const String appName = 'Мой женский календарь';
-  static const String appSubtitle = 'Календарь цикла';
   static const int defaultCycleLength = 28;
   static const int defaultPeriodDuration = 5;
   static const int minCycleLength = 21;
@@ -21,6 +19,9 @@ class AppConstants {
   static const Duration animationDuration = Duration(milliseconds: 280);
   static const Curve animationCurve = Curves.easeOutCubic;
   static const String supportEmail = 'support@мойсофт.рф';
+
+  /// Ключ языка интерфейса в SharedPreferences (ru / en).
+  static const String localeKey = 'app_locale_code';
   static const int reminderHour = 9;
   static const int reminderDaysBefore = 1;
 }

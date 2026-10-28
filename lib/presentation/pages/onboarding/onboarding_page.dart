@@ -82,7 +82,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: executeContinue,
-                  child: Text(_step == 2 ? l10n.onboardingStart : l10n.onboardingNext),
+                  child: Text(
+                    _step == 2 ? l10n.onboardingStart : l10n.onboardingNext,
+                  ),
                 ),
                 if (_step > 0) ...[
                   const SizedBox(height: 8),
@@ -135,10 +137,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            l10n.onboardingWelcomeBody,
-            textAlign: TextAlign.center,
-          ),
+          Text(l10n.onboardingWelcomeBody, textAlign: TextAlign.center),
         ],
       ),
     );

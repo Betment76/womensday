@@ -87,7 +87,9 @@ class PremiumEntitlementService {
         );
         await _executeApplyPaidStatus(status);
         return;
-      } catch (_) {}
+      } catch (_) {
+        // Сеть недоступна — статус сверится при следующем запуске/resume.
+      }
     }
     final String orderId =
         _preferences.getString(TBankConfig.lastOrderIdKey) ?? '';
@@ -99,7 +101,9 @@ class PremiumEntitlementService {
         orderId: orderId,
       );
       await _executeApplyPaidStatus(status);
-    } catch (_) {}
+    } catch (_) {
+      // Сеть недоступна — статус сверится при следующем запуске/resume.
+    }
   }
 
   Future<void> _executeApplyPaidStatus(PaymentStatus status) async {

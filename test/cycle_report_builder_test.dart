@@ -15,8 +15,14 @@ void main() {
   final DateTime today = DateTime(2026, 9, 7);
 
   test('берёт последние 12 циклов и дневник в их диапазоне', () {
-    final List<PeriodCycle> cycles = List<PeriodCycle>.generate(14, (int index) {
-      final DateTime start = DateTime(2025, 8, 1).add(Duration(days: index * 28));
+    final List<PeriodCycle> cycles = List<PeriodCycle>.generate(14, (
+      int index,
+    ) {
+      final DateTime start = DateTime(
+        2025,
+        8,
+        1,
+      ).add(Duration(days: index * 28));
       return PeriodCycle(
         start: start,
         end: start.add(const Duration(days: 4)),
@@ -54,9 +60,7 @@ void main() {
       data: CalendarData(
         isOnboardingCompleted: true,
         settings: CycleSettings.createDefault(),
-        logs: <String, DayLog>{
-          emptyDate.storageKey: DayLog(date: emptyDate),
-        },
+        logs: <String, DayLog>{emptyDate.storageKey: DayLog(date: emptyDate)},
       ),
       forecast: executeForecast(cycles: const <PeriodCycle>[]),
       generatedAt: today,
